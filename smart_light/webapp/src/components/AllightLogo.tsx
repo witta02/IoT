@@ -17,7 +17,7 @@ export const AllightLogo: React.FC<AllightLogoProps> = ({
     <div 
       className={`inline-flex items-center justify-center select-none ${interactive ? 'cursor-pointer' : ''} ${className}`}
       onClick={() => interactive && setIsInverted(!isInverted)}
-      title={interactive ? 'คลิกเพื่อหมุนสลับ โคมไฟ <-> ตัวอักษร A' : 'allight logo'}
+      title={interactive ? 'คลิกเพื่อหมุนสลับ โคมไฟ <-> ตัวอักษร A' : 'All Light logo'}
       style={{ width: size, height: size }}
     >
       <svg 

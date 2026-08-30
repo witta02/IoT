@@ -113,9 +113,9 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
   };
 
   const getConnectionModeName = () => {
-    if (connection.mode === 'ble') return 'บลูทูธ (BLE)';
-    if (connection.mode === 'wifi') return 'ไวไฟบ้าน (LAN)';
-    if (connection.mode === 'mqtt') return 'คลาวด์ทั่วโลก (EMQX Cloud)';
+    if (connection.mode === 'ble') return 'บลูทูธ';
+    if (connection.mode === 'wifi') return 'ไวไฟในบ้าน';
+    if (connection.mode === 'mqtt') return 'อินเทอร์เน็ต';
     return 'ออนไลน์';
   };
 
@@ -139,7 +139,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-[#222834]">
           <h2 className="text-sm font-bold text-[#fcfbfa] flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#d4af37] shadow-[0_0_8px_#d4af37]" />
-            เชื่อมต่อโคมไฟอัจฉริยะ
+            เชื่อมต่อโคมไฟ All Light
           </h2>
           <button
             onClick={onClose}
@@ -171,10 +171,10 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         <div className="grid grid-cols-5 gap-1 bg-[#141820] p-1 rounded-xl my-3 border border-[#222834]">
           {[
             { id: 'auto', label: 'อัตโนมัติ' },
-            { id: 'mqtt', label: 'Cloud' },
-            { id: 'ble', label: 'BLE' },
-            { id: 'wifi', label: 'Wi-Fi' },
-            { id: 'qr', label: 'QR Scan' }
+            { id: 'mqtt', label: 'ทางไกล' },
+            { id: 'ble', label: 'บลูทูธ' },
+            { id: 'wifi', label: 'ไวไฟ' },
+            { id: 'qr', label: 'สแกน QR' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -183,7 +183,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
                 setErrorMessage(null);
                 setAutoStatus(null);
               }}
-              className={`py-1.5 rounded-lg text-[11px] font-bold font-mono transition-all cursor-pointer text-center ${
+              className={`py-1.5 rounded-lg text-[11px] font-medium transition-all cursor-pointer text-center ${
                 activeTab === tab.id
                   ? 'bg-[#1c222d] border border-[#d4af37]/50 text-[#d4af37] shadow-sm'
                   : 'text-[#8b95a5] hover:text-[#fcfbfa]'
@@ -198,10 +198,10 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         {activeTab === 'auto' && (
           <div className="space-y-3 py-1 text-center">
             <p className="text-xs text-[#8b95a5] leading-relaxed">
-              ระบบจะค้นหาและเชื่อมต่อโคมไฟผ่านช่องทางที่ดีที่สุดให้อัตโนมัติ (Wi-Fi $\rightarrow$ Cloud $\rightarrow$ BLE)
+              ระบบจะค้นหาและเชื่อมต่อโคมไฟที่พร้อมใช้งานให้อัตโนมัติ
             </p>
             {autoStatus && (
-              <div className="p-2.5 bg-[#141820] border border-[#d4af37]/30 text-xs text-[#d4af37] rounded-xl font-mono animate-pulse">
+              <div className="p-2.5 bg-[#141820] border border-[#d4af37]/30 text-xs text-[#d4af37] rounded-xl animate-pulse">
                 {autoStatus}
               </div>
             )}
@@ -210,27 +210,23 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
               disabled={isConnecting}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] font-bold text-xs cursor-pointer disabled:opacity-40 transition-all shadow-md shadow-[#d4af37]/20 hover:brightness-110"
             >
-              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'กดเพื่อเชื่อมต่อทันที (Auto Connect)'}
+              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อทันที'}
             </button>
           </div>
         )}
 
-        {/* Cloud MQTT Tab */}
+        {/* Remote Internet Tab */}
         {activeTab === 'mqtt' && (
           <form onSubmit={handleMqttClick} className="space-y-3 py-1">
             <p className="text-xs text-[#8b95a5] leading-relaxed">
-              ควบคุมโคมไฟได้จากทุกที่ทั่วโลกผ่านเครือข่ายเน็ตมือถือ 4G/5G ด้วยความเร็วสูง
+              ควบคุมโคมไฟได้จากทุกที่ผ่านเน็ตมือถือหรือไวไฟ
             </p>
-            <div className="text-[11px] font-mono p-2 rounded bg-[#141820] border border-[#222834] text-[#8b95a5] flex items-center justify-between">
-              <span>Cloud Server:</span>
-              <span className="text-[#d4af37]">broker.emqx.io:8084</span>
-            </div>
             <button
               type="submit"
               disabled={isConnecting}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] font-bold text-xs cursor-pointer disabled:opacity-40 transition-all shadow-md shadow-[#d4af37]/20 hover:brightness-110"
             >
-              {isConnecting ? 'กำลังเชื่อมต่อคลาวด์...' : 'เชื่อมต่อ Cloud ทันที'}
+              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อผ่านอินเทอร์เน็ต'}
             </button>
           </form>
         )}
@@ -240,19 +236,19 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
           <div className="space-y-3 py-1">
             {!isBleSupported ? (
               <div className="p-3 bg-[#141820] text-xs text-[#d4af37] rounded-xl border border-[#d4af37]/30">
-                เบราว์เซอร์นี้ไม่รองรับ Web Bluetooth (บน iPhone โปรดใช้ Cloud หรือ Wi-Fi)
+                เบราว์เซอร์นี้ไม่รองรับบลูทูธ (บน iPhone แนะนำให้เชื่อมต่อผ่านอินเทอร์เน็ต)
               </div>
             ) : (
               <>
                 <p className="text-xs text-[#8b95a5] leading-relaxed">
-                  เชื่อมต่อตรงกับโคมไฟโดยไม่ต้องใช้อินเทอร์เน็ต (ระยะ ~10 เมตร)
+                  เชื่อมต่อตรงกับโคมไฟโดยไม่ต้องใช้อินเทอร์เน็ต (ระยะใกล้ ~10 เมตร)
                 </p>
                 <button
                   onClick={handleBleClick}
                   disabled={isConnecting}
                   className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] font-bold text-xs cursor-pointer disabled:opacity-40 transition-all shadow-md shadow-[#d4af37]/20 hover:brightness-110"
                 >
-                  {isConnecting ? 'กำลังค้นหา...' : 'กดเพื่อค้นหาโคมไฟ (BLE)'}
+                  {isConnecting ? 'กำลังค้นหา...' : 'ค้นหาโคมไฟใกล้ตัว'}
                 </button>
               </>
             )}
@@ -263,11 +259,11 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         {activeTab === 'wifi' && (
           <form onSubmit={handleWifiClick} className="space-y-3 py-1">
             <p className="text-xs text-[#8b95a5]">
-              เชื่อมต่อผ่านเครือข่ายไวไฟในบ้าน (วง LAN เดียวกัน)
+              เชื่อมต่อผ่านสัญญาณไวไฟในบ้าน
             </p>
             <div>
               <label className="block text-xs text-[#8b95a5] mb-1 font-medium">
-                ที่อยู่อุปกรณ์:
+                ที่อยู่โคมไฟ:
               </label>
               <input
                 type="text"
@@ -279,10 +275,10 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
             <div className="flex gap-2 text-xs">
               <button
                 type="button"
-                onClick={() => setWifiIp('http://smartlight.local')}
+                onClick={() => setWifiIp('http://allight.local')}
                 className="px-2 py-1 rounded bg-[#141820] text-[#8b95a5] text-[11px] border border-[#222834] hover:text-[#d4af37]"
               >
-                smartlight.local
+                allight.local
               </button>
             </div>
             <button
@@ -290,7 +286,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
               disabled={isConnecting}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] font-bold text-xs cursor-pointer disabled:opacity-40 transition-all shadow-md shadow-[#d4af37]/20 hover:brightness-110"
             >
-              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อผ่าน Wi-Fi'}
+              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อไวไฟ'}
             </button>
           </form>
         )}
@@ -299,12 +295,12 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         {activeTab === 'qr' && (
           <div className="flex flex-col items-center justify-center space-y-3 py-2 text-center">
             <p className="text-xs text-[#8b95a5]">
-              ใช้กล้องมือถือสแกน QR Code เพื่อเปิดหน้าควบคุมได้ทันที
+              ใช้กล้องมือถือสแกนเพื่อเปิดใช้งานบนโทรศัพท์
             </p>
             <div className="p-2.5 bg-[#141820] border border-[#222834] rounded-2xl shadow-inner">
               <img
                 src={qrCodeUrl}
-                alt="allight WebApp QR"
+                alt="All Light WebApp QR"
                 className="w-36 h-36 rounded-xl"
               />
             </div>
@@ -312,9 +308,9 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
               href={currentAppUrl} 
               target="_blank" 
               rel="noreferrer"
-              className="text-[11px] font-mono text-[#d4af37] hover:underline break-all max-w-[260px]"
+              className="text-[11px] text-[#d4af37] hover:underline break-all max-w-[260px]"
             >
-              {currentAppUrl}
+              เปิดหน้าควบคุม All Light
             </a>
           </div>
         )}
@@ -326,7 +322,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         )}
 
         <div className="mt-3 pt-3 border-t border-[#222834] text-[11px] text-[#8b95a5] text-center">
-          สวิตช์ปุ่มกดที่ตัวโคมไฟ สามารถกดเปิด-ปิดได้ตลอดเวลาโดยไม่ต้องเชื่อมต่อ
+          สวิตช์ปุ่มกดที่ตัวโคมไฟ สามารถกดเปิด-ปิดได้ตลอดเวลา
         </div>
       </div>
     </div>

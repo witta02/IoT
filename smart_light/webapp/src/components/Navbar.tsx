@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       return (
         <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
           <span className="w-2 h-2 rounded-full bg-[#d4af37] shadow-[0_0_6px_#d4af37]" />
-          บลูทูธ: {connection.deviceName || 'เชื่อมต่อแล้ว'}
+          เชื่อมต่อแล้ว (บลูทูธ)
         </span>
       );
     }
@@ -37,14 +37,14 @@ export const Navbar: React.FC<NavbarProps> = ({
       return (
         <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
           <span className="w-2 h-2 rounded-full bg-[#d4af37] shadow-[0_0_6px_#d4af37] animate-pulse" />
-          คลาวด์: ออนไลน์
+          ออนไลน์ (อินเทอร์เน็ต)
         </span>
       );
     }
     return (
       <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
         <span className="w-2 h-2 rounded-full bg-[#d4af37]" />
-        ไวไฟ: ออนไลน์
+        เชื่อมต่อแล้ว (ไวไฟ)
       </span>
     );
   };
@@ -54,10 +54,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="flex items-center gap-3">
         <AllightLogo size={36} />
         <div className="flex flex-col items-center sm:items-start">
-          <h1 className="text-base font-bold tracking-tight text-[#fcfbfa] flex items-center gap-2 font-mono">
-            allight
+          <h1 className="text-base font-bold tracking-tight text-[#fcfbfa] flex items-center gap-2">
+            All Light
           </h1>
-          <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ (BLE · Wi-Fi · Cloud)</p>
+          <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ</p>
         </div>
       </div>
 

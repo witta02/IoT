@@ -13,9 +13,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'icons/*.png'],
       manifest: {
-        name: 'allight',
-        short_name: 'allight',
-        description: 'allight — Autonomous IoT Smart Lighting System',
+        name: 'All Light',
+        short_name: 'All Light',
+        description: 'All Light — ระบบควบคุมโคมไฟอัจฉริยะ',
         theme_color: '#07080a',
         background_color: '#07080a',
         display: 'standalone',

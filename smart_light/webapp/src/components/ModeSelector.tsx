@@ -29,8 +29,8 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
     <section className="pb-8 mb-8 border-b border-[#222834] select-none">
       <div className="flex items-center justify-between mb-3 text-xs font-medium text-[#8b95a5]">
         <span>โหมดการทำงาน</span>
-        <span className="text-[11px] font-mono text-[#d4af37] font-bold">
-          {currentMode === 0 ? 'MANUAL' : currentMode === 1 ? 'SCHEDULE' : 'AUTO-LDR'}
+        <span className="text-[11px] text-[#d4af37] font-semibold">
+          {currentMode === 0 ? 'ควบคุมเอง' : currentMode === 1 ? 'ตามเวลา' : 'ตามแสงสว่าง'}
         </span>
       </div>
 
