@@ -51,10 +51,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 mb-6 border-b border-[#222834] select-none text-center sm:text-left">
       <div className="flex flex-col items-center sm:items-start">
-        <h1 className="text-sm font-bold tracking-tight text-[#fcfbfa] flex items-center gap-2">
-          ระบบไฟอัจฉริยะ
+        <h1 className="text-base font-bold tracking-tight text-[#fcfbfa] flex items-center gap-2 font-mono">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#d4af37] shadow-[0_0_8px_#d4af37]" />
+          allight
         </h1>
-        <p className="text-xs text-[#8b95a5]">ควบคุมผ่านบลูทูธ, ไวไฟ และ คลาวด์</p>
+        <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ (BLE · Wi-Fi · Cloud)</p>
       </div>
 
       <div className="flex items-center justify-center gap-2">

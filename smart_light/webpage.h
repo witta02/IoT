@@ -131,8 +131,11 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2)}
   <div>
     <header>
       <div>
-        <h1>ระบบไฟอัจฉริยะ</h1>
-        <p class="sub">ควบคุมผ่านบลูทูธ, ไวไฟ และ คลาวด์</p>
+        <h1 style="font-family:monospace;letter-spacing:-0.03em;font-size:1.1rem;display:flex;align-items:center;justify-content:center;gap:6px">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 6px var(--acc);display:inline-block"></span>
+          allight
+        </h1>
+        <p class="sub">ระบบควบคุมโคมไฟอัจฉริยะ (BLE · Wi-Fi · Cloud)</p>
       </div>
       <div class="hdr-btns">
         <button class="btn-rf" onclick="fetchStatus()">รีเฟรช</button>

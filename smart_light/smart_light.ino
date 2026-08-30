@@ -27,7 +27,7 @@
 #include "webpage.h"
 
 // ─── BLE UUID DEFINITIONS ──────────────────────────────────────────────────
-#define BLE_DEVICE_NAME             "ESP32-SmartLight"
+#define BLE_DEVICE_NAME             "allight"
 #define SERVICE_UUID                "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID_RX      "beb5483e-36e1-4688-b7f5-ea07361b26a8" // Write
 #define CHARACTERISTIC_UUID_TX      "beb5483e-36e1-4688-b7f5-ea07361b26a9" // Notify/Read
@@ -35,7 +35,7 @@
 // ─── WI-FI CONFIGURATION ──────────────────────────────────────────────────
 const bool USE_AP_MODE = false; 
 
-const char* AP_SSID = "Oline-Smartlight";
+const char* AP_SSID = "allight-AP";
 const char* AP_PASS = "12345678";
 
 const char* WIFI_SSID = "Withwin";        // 👈 Put your home Wi-Fi name here
@@ -170,7 +170,7 @@ void setup() {
   delay(100);
 
   Serial.println("\n\n==================================================");
-  Serial.println("[System] ESP32 SMART LIGHT - QUAD STACK SYSTEM");
+  Serial.println("[System] allight — Autonomous Smart Luminaire");
   Serial.println("   [1] Physical Button  [2] Web Bluetooth (BLE)");
   Serial.println("   [3] Wi-Fi REST API   [4] Global MQTT Remote");
   Serial.println("==================================================");
@@ -258,10 +258,10 @@ void loop() {
         wifiConnected = true;
         Serial.printf("\n[Wi-Fi] Connected. IP: http://%s\n", WiFi.localIP().toString().c_str());
         
-        if (!mdnsStarted && MDNS.begin("smartlight")) {
+        if (!mdnsStarted && MDNS.begin("allight")) {
           MDNS.addService("http", "tcp", 80);
           mdnsStarted = true;
-          Serial.println("[mDNS] Hostname Live: http://smartlight.local");
+          Serial.println("[mDNS] Hostname Live: http://allight.local");
         }
 
         if (!ntpConfigured) {
