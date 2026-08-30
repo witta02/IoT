@@ -1,0 +1,8 @@
+﻿{
+  "buildCommand": "cd smart_light/webapp && npm run build",
+  "outputDirectory": "smart_light/webapp/dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
