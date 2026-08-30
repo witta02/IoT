@@ -119,8 +119,18 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
     return 'ออนไลน์';
   };
 
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-    window.location.origin.includes('http') ? window.location.href : 'http://smartlight.local'
+  // Priority: Vercel WebApp URL -> Live Origin -> allight.local
+  const getAppUrl = () => {
+    if (typeof window !== 'undefined') {
+      if (window.location.origin.includes('vercel.app')) return window.location.href;
+      if (window.location.origin.includes('http')) return window.location.href;
+    }
+    return 'https://allight.vercel.app';
+  };
+
+  const currentAppUrl = getAppUrl();
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+    currentAppUrl
   )}&color=d4af37&bgcolor=0e1117`;
 
   return (
@@ -294,11 +304,18 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
             <div className="p-2.5 bg-[#141820] border border-[#222834] rounded-2xl shadow-inner">
               <img
                 src={qrCodeUrl}
-                alt="Smart Light Pairing QR"
+                alt="allight WebApp QR"
                 className="w-36 h-36 rounded-xl"
               />
             </div>
-            <span className="text-[11px] font-mono text-[#d4af37]">http://smartlight.local</span>
+            <a 
+              href={currentAppUrl} 
+              target="_blank" 
+              rel="noreferrer"
+              className="text-[11px] font-mono text-[#d4af37] hover:underline break-all max-w-[260px]"
+            >
+              {currentAppUrl}
+            </a>
           </div>
         )}
 
