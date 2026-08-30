@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบไฟอัจฉริยะ 💡</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        :root {
+            --orange-main: #f97316;
+            --orange-hover: #ea580c;
+            --bg-color: #050508;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans Thai', 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+            overflow-x: hidden;
+            padding: 40px 20px;
+        }
+
+        /* Animated gradient background */
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -2;
+            background: radial-gradient(circle at 15% 50%, rgba(249, 115, 22, 0.08), transparent 50%),
+                        radial-gradient(circle at 85% 30%, rgba(249, 115, 22, 0.05), transparent 50%);
+            animation: breathe 10s infinite ease-in-out;
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            background-color: var(--orange-main);
+            border-radius: 50%;
+            opacity: 0.15;
+            box-shadow: 0 0 10px var(--orange-main);
+            animation: float 6s infinite ease-in-out;
+        }
+        .particle:nth-child(1) { top: 20%; left: 10%; width: 4px; height: 4px; animation-duration: 5s; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 70%; left: 15%; width: 6px; height: 6px; animation-duration: 7s; animation-delay: 1s; }
+        .particle:nth-child(3) { top: 40%; left: 85%; width: 3px; height: 3px; animation-duration: 6s; animation-delay: 2s; }
+        .particle:nth-child(4) { top: 80%; left: 80%; width: 5px; height: 5px; animation-duration: 8s; animation-delay: 0.5s; }
+        .particle:nth-child(5) { top: 30%; left: 50%; width: 4px; height: 4px; animation-duration: 6.5s; animation-delay: 1.5s; }
+        .particle:nth-child(6) { top: 10%; left: 70%; width: 5px; height: 5px; animation-duration: 7.5s; animation-delay: 2.5s; }
+
+        .demo-ribbon {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #ea580c, #f97316);
+            color: white;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 100;
+            box-shadow: 0 2px 15px rgba(249, 115, 22, 0.4);
+            letter-spacing: 0.5px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            margin-top: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        .header h1 span {
+            color: var(--orange-main);
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+        }
+        .subtitle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.05);
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--orange-main);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px;
+            opacity: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Staggered entry */
+        .card:nth-child(2) { animation: fadeInUp 0.6s 0.1s ease forwards; }
+        .card:nth-child(3) { animation: fadeInUp 0.6s 0.2s ease forwards; }
+        .card:nth-child(4) { animation: fadeInUp 0.6s 0.3s ease forwards; }
+        .card:nth-child(5) { animation: fadeInUp 0.6s 0.4s ease forwards; }
+
+        /* Card highlight top border */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.5), transparent);
+            opacity: 0.5;
+        }
+
+        .bulb-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+        
+        .bulb-icon {
+            font-size: 5rem;
+            color: #333;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 24px;
+            filter: drop-shadow(0 0 0 transparent);
+        }
+        
+        .bulb-icon.on {
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 165, 0, 0.6);
+            animation: pulse-glow 3s infinite ease-in-out;
+            transform: scale(1.05);
+        }
+
+        .light-status {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 250px;
+        }
+        .toggle-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: skewX(-20deg);
+            transition: 0.5s;
+        }
+        .toggle-btn:hover::after {
+            left: 150%;
+        }
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
+            border-color: rgba(255,255,255,0.2);
+        }
+        .toggle-btn:active {
+            transform: translateY(1px) scale(0.97);
+        }
+        .toggle-btn.on {
+            background: linear-gradient(135deg, var(--orange-main), var(--orange-hover));
+            border-color: transparent;
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4);
+        }
+        .toggle-btn.on:hover {
+            box-shadow: 0 10px 30px rgba(249, 115, 22, 0.5);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--orange-main);
+            border-radius: 2px;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .mode-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 16px 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            font-family: inherit;
+        }
+        .mode-icon {
+            font-size: 1.6rem;
+            transition: transform 0.3s ease;
+        }
+        .mode-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .mode-sub {
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+        .mode-btn:hover {
+            background: rgba(255,255,255,0.06);
+            transform: translateY(-2px);
+        }
+        .mode-btn:hover .mode-icon {
+            transform: scale(1.1);
+        }
+        .mode-btn.active {
+            background: rgba(249, 115, 22, 0.15);
+            border-color: rgba(249, 115, 22, 0.5);
+            color: var(--orange-main);
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.1);
+        }
+        .mode-btn.active .mode-icon {
+            transform: scale(1.1);
+        }
+
+        .ldr-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .ldr-val {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--orange-main);
+        }
+
+        .gauge-container {
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .gauge-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #3b82f6, #10b981, #f59e0b, #ef4444);
+            background-size: 200% 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+        
+        .gauge-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite linear;
+        }
+
+        .gauge-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .slider-group {
+            margin-top: 10px;
+        }
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+            margin-bottom: 16px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--orange-main);
+            cursor: pointer;
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+            transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .ldr-hint {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border-left: 3px solid var(--orange-main);
+        }
+
+        .time-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .time-group::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            z-index: 0;
+        }
+        .time-input {
+            flex: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 1;
+        }
+        .time-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        input[type="time"] {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.5;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        input[type="time"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        .save-btn {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .save-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .toast {
+            background: rgba(20, 20, 25, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: toast-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        @keyframes toast-in {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast.hide {
+            animation: toast-out 0.3s ease forwards;
+        }
+        @keyframes toast-out {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(20px); opacity: 0; }
+        }
+        
+        /* Animations */
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes pulse-glow { 0%,100% { filter: drop-shadow(0 0 20px rgba(249,115,22,0.6)); } 50% { filter: drop-shadow(0 0 40px rgba(249,115,22,0.9)); } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes fadeInUp { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes breathe { 0%,100% { opacity:0.35; } 50% { opacity:0.6; } }
+        @keyframes pulse-dot { 0%,100% { box-shadow: 0 0 4px var(--orange-main); } 50% { box-shadow: 0 0 12px var(--orange-main), 0 0 20px rgba(249,115,22,0.4); } }
+        
+        /* Responsive */
+        @media (max-width: 400px) {
+            .mode-grid { grid-template-columns: 1fr; }
+            .time-group { flex-direction: column; gap: 12px; }
+            .time-group::after { display: none; }
+            .time-input { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-mesh"></div>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="demo-ribbon">
+        🌐 โหมดตัวอย่าง — ระบบไฟอัจฉริยะ
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>ไฟ<span>อัจฉริยะ</span></h1>
+            <div class="subtitle">
+                <span class="status-dot"></span> เชื่อมต่อแล้ว · ระบบ ESP32
+            </div>
+        </div>
+
+        <!-- Light Control Card -->
+        <div class="card">
+            <div class="bulb-container">
+                <div class="bulb-icon" id="bulbIcon">💡</div>
+                <div class="light-status" id="lightStatus">ไฟปิดอยู่</div>
+                <button class="toggle-btn" id="toggleBtn" onclick="toggleLight()">เปิดไฟ</button>
+            </div>
+        </div>
+
+        <!-- Mode Card -->
+        <div class="card">
+            <div class="section-title">โหมดควบคุม</div>
+            <div class="mode-grid">
+                <div class="mode-btn active" id="btn-mode-0" onclick="setMode(0)">
+                    <div class="mode-icon">👆</div>
+                    <div class="mode-name">ควบคุมเอง</div>
+                    <div class="mode-sub">ตั้งค่าเอง</div>
+                </div>
+                <div class="mode-btn" id="btn-mode-1" onclick="setMode(1)">
+                    <div class="mode-icon">🕒</div>
+                    <div class="mode-name">ตั้งเวลา</div>
+                    <div class="mode-sub">ตามเวลา</div>
+                </div>
+                <div class="mode-btn" id="btn-mode-2" onclick="setMode(2)">
+                    <div class="mode-icon">☀️</div>
+                    <div class="mode-name">ตามแสง</div>
+                    <div class="mode-sub">เซ็นเซอร์ LDR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LDR Card -->
+        <div class="card">
+            <div class="section-title">เซ็นเซอร์แสง (LDR)</div>
+            <div class="ldr-info">
+                <div>ค่าปัจจุบัน</div>
+                <div class="ldr-val" id="ldrValue">0</div>
+            </div>
+            
+            <div class="gauge-container">
+                <div class="gauge-bar" id="ldrGauge"></div>
+            </div>
+            
+            <div class="gauge-labels">
+                <span>0 (มืด)</span>
+                <span>4095 (สว่าง)</span>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>ทริกเกอร์ต่ำกว่า: <strong id="thresholdDisplay" style="color: var(--orange-main);">1000</strong></span>
+                </div>
+                <input type="range" id="thresholdSlider" min="0" max="4095" value="1000" oninput="updateThresholdDisplay(this.value)" onchange="setThreshold(this.value)">
+                
+                <div class="ldr-hint" id="ldrHint">
+                    🌙 แสงน้อย (มืด) — เปิดไฟอัตโนมัติ
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Card -->
+        <div class="card">
+            <div class="section-title">ตั้งเวลาเปิด-ปิด (ระบบ 24 ชั่วโมง)</div>
+            
+            <div class="time-group">
+                <div class="time-input">
+                    <div class="time-label">🟢 เวลาเปิดไฟ</div>
+                    <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+                        <select id="onH" style="background:#141418; color:white; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 4px; font-size:1.1rem; font-weight:600; flex:1; text-align:center; outline:none;"></select>
+                        <span style="font-weight:700; color:var(--orange-main);">:</span>
+                        <select id="onM" style="background:#141418; color:white; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 4px; font-size:1.1rem; font-weight:600; flex:1; text-align:center; outline:none;"></select>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">น.</span>
+                    </div>
+                </div>
+                
+                <div class="time-input">
+                    <div class="time-label">🔴 เวลาปิดไฟ</div>
+                    <div style="display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+                        <select id="offH" style="background:#141418; color:white; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 4px; font-size:1.1rem; font-weight:600; flex:1; text-align:center; outline:none;"></select>
+                        <span style="font-weight:700; color:var(--orange-main);">:</span>
+                        <select id="offM" style="background:#141418; color:white; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:6px 4px; font-size:1.1rem; font-weight:600; flex:1; text-align:center; outline:none;"></select>
+                        <span style="font-size:0.75rem; color:var(--text-muted);">น.</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="save-btn" onclick="saveSchedule()">บันทึกเวลา</button>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // MOCK STATE (Demo Mode)
+        let mockState = {
+            light_state: 0,
+            mode: 0,
+            ldr_value: 1500,
+            ldr_threshold: 1000,
+            time_on: "18:00",
+            time_off: "06:00"
+        };
+        
+        let ldrDirection = 1;
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+            
+            // Simulate LDR value changing smoothly
+            setInterval(() => {
+                let change = Math.floor(Math.random() * 100) * ldrDirection;
+                mockState.ldr_value += change;
+                
+                if(mockState.ldr_value > 4000) ldrDirection = -1;
+                if(mockState.ldr_value < 100) ldrDirection = 1;
+                
+                updateLDRDisplay();
+                
+                // Auto mode logic
+                if(mockState.mode === 2) {
+                    let shouldBeOn = mockState.ldr_value < mockState.ldr_threshold;
+                    if((shouldBeOn && mockState.light_state === 0) || (!shouldBeOn && mockState.light_state === 1)) {
+                        mockState.light_state = shouldBeOn ? 1 : 0;
+                        updateLightDisplay();
+                    }
+                }
+            }, 2000);
+            
+            // Simulate Time mode
+            setInterval(() => {
+                if(mockState.mode === 1) {
+                    let now = new Date();
+                    let currentStr = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+                    let isTimeOn = currentStr >= mockState.time_on || currentStr < mockState.time_off;
+                    if(mockState.time_on > mockState.time_off) {
+                        isTimeOn = currentStr >= mockState.time_on || currentStr < mockState.time_off;
+                    } else {
+                        isTimeOn = currentStr >= mockState.time_on && currentStr < mockState.time_off;
+                    }
+                    
+                    let targetState = isTimeOn ? 1 : 0;
+                    if(mockState.light_state !== targetState) {
+                        mockState.light_state = targetState;
+                        updateLightDisplay();
+                    }
+                }
+            }, 5000);
+        });
+
+        // The exact endpoints logic mapped to mockState
+        function init24h() {
+            const onH = document.getElementById('onH');
+            const offH = document.getElementById('offH');
+            const onM = document.getElementById('onM');
+            const offM = document.getElementById('offM');
+            const pad = n => String(n).padStart(2, '0');
+            
+            for(let i=0; i<24; i++) {
+                let v = pad(i);
+                onH.options.add(new Option(v, v));
+                offH.options.add(new Option(v, v));
+            }
+            for(let j=0; j<60; j++) {
+                let v = pad(j);
+                onM.options.add(new Option(v, v));
+                offM.options.add(new Option(v, v));
+            }
+            onH.value = '18'; onM.value = '00';
+            offH.value = '06'; offM.value = '00';
+        }
+        init24h();
+
+        function fetchStatus() {
+            updateUI();
+        }
+
+        function updateUI() {
+            updateLightDisplay();
+            updateModeDisplay();
+            updateLDRDisplay();
+            
+            document.getElementById('thresholdSlider').value = mockState.ldr_threshold;
+            document.getElementById('thresholdDisplay').innerText = mockState.ldr_threshold;
+            
+            updateHint();
+        }
+
+        function updateLightDisplay() {
+            const btn = document.getElementById('toggleBtn');
+            const icon = document.getElementById('bulbIcon');
+            const statusText = document.getElementById('lightStatus');
+            
+            if (mockState.light_state === 1) {
+                btn.classList.add('on');
+                btn.innerText = 'ปิดไฟ';
+                icon.classList.add('on');
+                statusText.innerText = 'ไฟเปิดอยู่';
+            } else {
+                btn.classList.remove('on');
+                btn.innerText = 'เปิดไฟ';
+                icon.classList.remove('on');
+                statusText.innerText = 'ไฟปิดอยู่';
+            }
+        }
+
+        function updateModeDisplay() {
+            for(let i=0; i<=2; i++) {
+                document.getElementById(`btn-mode-${i}`).classList.remove('active');
+            }
+            document.getElementById(`btn-mode-${mockState.mode}`).classList.add('active');
+            
+            document.getElementById('toggleBtn').disabled = (mockState.mode !== 0);
+            document.getElementById('toggleBtn').style.opacity = (mockState.mode !== 0) ? '0.5' : '1';
+            document.getElementById('toggleBtn').style.cursor = (mockState.mode !== 0) ? 'not-allowed' : 'pointer';
+        }
+
+        function updateLDRDisplay() {
+            document.getElementById('ldrValue').innerText = mockState.ldr_value;
+            let percent = (mockState.ldr_value / 4095) * 100;
+            document.getElementById('ldrGauge').style.width = percent + '%';
+            
+            updateHint();
+        }
+
+        function updateThresholdDisplay(val) {
+            document.getElementById('thresholdDisplay').innerText = val;
+            updateHint(val);
+        }
+
+        function updateHint(val = null) {
+            let threshold = val !== null ? parseInt(val) : mockState.ldr_threshold;
+            let current = mockState.ldr_value;
+            let hintEl = document.getElementById('ldrHint');
+            
+            if(current < threshold) {
+                hintEl.innerHTML = "🌙 แสงน้อย (มืด) — เปิดไฟอัตโนมัติ";
+            } else {
+                hintEl.innerHTML = "☀️ แสงมาก (สว่าง) — ปิดไฟอัตโนมัติ";
+            }
+        }
+
+        function toggleLight() {
+            mockState.mode = 0;
+            updateModeDisplay();
+            mockState.light_state = mockState.light_state === 1 ? 0 : 1;
+            updateLightDisplay();
+            showToast(mockState.light_state === 1 ? '💡 เปิดไฟแล้ว (โหมดควบคุมเอง)' : '🌑 ปิดไฟแล้ว (โหมดควบคุมเอง)');
+        }
+
+        function setMode(m) {
+            mockState.mode = m;
+            updateModeDisplay();
+            const MODES = ['ควบคุมเอง', 'ตั้งเวลาอัตโนมัติ', 'ตามแสงอัตโนมัติ'];
+            showToast(`เปลี่ยนโหมด: ${MODES[m]}`);
+        }
+
+        function setThreshold(val) {
+            mockState.ldr_threshold = parseInt(val);
+            showToast(`บันทึกค่าเกณฑ์: ${val}`);
+        }
+
+        function saveSchedule() {
+            const pad = n => String(n).padStart(2, '0');
+            const onH = document.getElementById('onH').value;
+            const onM = document.getElementById('onM').value;
+            const offH = document.getElementById('offH').value;
+            const offM = document.getElementById('offM').value;
+            mockState.time_on = `${pad(onH)}:${pad(onM)}`;
+            mockState.time_off = `${pad(offH)}:${pad(offM)}`;
+            showToast(`บันทึกเวลาแล้ว: เปิด ${mockState.time_on} น. / ปิด ${mockState.time_off} น.`);
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = msg;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
