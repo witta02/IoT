@@ -44,7 +44,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     return (
       <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
         <span className="w-2 h-2 rounded-full bg-[#d4af37]" />
-        เชื่อมต่อแล้ว (ไวไฟ)
+        เชื่อมต่อแล้ว (Wi-Fi)
       </span>
     );
   };

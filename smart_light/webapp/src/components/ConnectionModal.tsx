@@ -114,7 +114,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
 
   const getConnectionModeName = () => {
     if (connection.mode === 'ble') return 'บลูทูธ';
-    if (connection.mode === 'wifi') return 'ไวไฟในบ้าน';
+    if (connection.mode === 'wifi') return 'WIFI ในบ้าน';
     if (connection.mode === 'mqtt') return 'อินเทอร์เน็ต';
     return 'ออนไลน์';
   };
@@ -173,7 +173,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
             { id: 'auto', label: 'อัตโนมัติ' },
             { id: 'mqtt', label: 'ทางไกล' },
             { id: 'ble', label: 'บลูทูธ' },
-            { id: 'wifi', label: 'ไวไฟ' },
+            { id: 'wifi', label: 'WIFI' },
             { id: 'qr', label: 'สแกน QR' }
           ].map((tab) => (
             <button
@@ -219,7 +219,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         {activeTab === 'mqtt' && (
           <form onSubmit={handleMqttClick} className="space-y-3 py-1">
             <p className="text-xs text-[#8b95a5] leading-relaxed">
-              ควบคุมโคมไฟได้จากทุกที่ผ่านเน็ตมือถือหรือไวไฟ
+              ควบคุมโคมไฟได้จากทุกที่ผ่านเน็ตมือถือหรือ WIFI
             </p>
             <button
               type="submit"
@@ -259,7 +259,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
         {activeTab === 'wifi' && (
           <form onSubmit={handleWifiClick} className="space-y-3 py-1">
             <p className="text-xs text-[#8b95a5]">
-              เชื่อมต่อผ่านสัญญาณไวไฟในบ้าน
+              เชื่อมต่อผ่านสัญญาณ WIFI ในบ้าน
             </p>
             <div>
               <label className="block text-xs text-[#8b95a5] mb-1 font-medium">
@@ -286,7 +286,7 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
               disabled={isConnecting}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] font-bold text-xs cursor-pointer disabled:opacity-40 transition-all shadow-md shadow-[#d4af37]/20 hover:brightness-110"
             >
-              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อไวไฟ'}
+              {isConnecting ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ WIFI'}
             </button>
           </form>
         )}
