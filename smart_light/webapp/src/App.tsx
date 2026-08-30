@@ -338,7 +338,7 @@ export const App: React.FC = () => {
       </div>
 
       <footer className="pt-8 pb-4 text-center text-xs text-[#8b95a5]">
-        ระบบไฟอัจฉริยะ • สวิตช์ปุ่มกดฮาร์ดแวร์ทำงานได้ทันทีแม้ออฟไลน์
+        All Light • สวิตช์ปุ่มกดฮาร์ดแวร์ทำงานได้ตลอดเวลาแม้ออฟไลน์
       </footer>
 
       <ConnectionModal
