@@ -16,11 +16,12 @@ export default defineConfig({
         name: 'ระบบไฟอัจฉริยะ (Smart Light)',
         short_name: 'SmartLight',
         description: 'ระบบควบคุมโคมไฟอัจฉริยะผ่านบลูทูธและไวไฟ',
-        theme_color: '#0b0d10',
-        background_color: '#0b0d10',
+        theme_color: '#07080a',
+        background_color: '#07080a',
         display: 'standalone',
         orientation: 'portrait',
-        start_url: '/',
+        scope: './',
+        start_url: './',
         icons: [
           {
             src: 'pwa-192x192.png',
