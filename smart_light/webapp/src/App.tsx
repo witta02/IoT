@@ -100,10 +100,14 @@ export const App: React.FC = () => {
   const handleConnectBle = async () => {
     setConnection({ mode: 'ble', status: 'connecting' });
     try {
-      const deviceName = await bleService.connect(
+      const name = await bleService.connect(
         (data) => {
           handleStateUpdate(data);
-          setConnection((prev) => ({ ...prev, status: 'connected', deviceName }));
+          setConnection((prev) => ({
+            ...prev,
+            status: 'connected',
+            deviceName: bleService.getDeviceName() || 'All Light'
+          }));
         },
         () => {
           setConnection({ mode: 'none', status: 'disconnected', error: 'บลูทูธถูกตัดการเชื่อมต่อ' });
@@ -113,7 +117,7 @@ export const App: React.FC = () => {
       setConnection({
         mode: 'ble',
         status: 'connected',
-        deviceName: deviceName || 'โคมไฟอัจฉริยะ'
+        deviceName: name || 'All Light'
       });
     } catch (err: any) {
       setConnection({ mode: 'none', status: 'disconnected', error: err.message });

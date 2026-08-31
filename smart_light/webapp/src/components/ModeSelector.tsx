@@ -12,6 +12,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   onSelectMode,
   disabled
 }) => {
+  const safeMode = typeof currentMode === 'number' ? currentMode : 0;
   const modes = [
     { id: 0, label: 'ควบคุมเอง', desc: 'เปิด-ปิดผ่านแอป' },
     { id: 1, label: 'ตามเวลา', desc: 'เปิด-ปิดตามนาฬิกา' },
@@ -19,7 +20,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   ];
 
   const handleModeChange = (id: number) => {
-    if (id !== currentMode) {
+    if (id !== safeMode) {
       hapticEngine.playHaptic(false);
       onSelectMode(id);
     }
@@ -33,14 +34,14 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
           โหมดการทำงาน
         </span>
         <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-[#d4af37]/15 border border-[#d4af37]/30 text-[#d4af37] font-semibold">
-          {currentMode === 0 ? 'ควบคุมเอง' : currentMode === 1 ? 'ตามเวลา' : 'ตามแสงสว่าง'}
+          {safeMode === 0 ? 'ควบคุมเอง' : safeMode === 1 ? 'ตามเวลา' : 'ตามแสงสว่าง'}
         </span>
       </div>
 
       {/* Machined Obsidian Segmented Bar with Gold Accents */}
       <div className="grid grid-cols-3 gap-2 bg-[#141820] p-1.5 rounded-2xl border border-[#222834] shadow-inner">
         {modes.map((mode) => {
-          const isActive = currentMode === mode.id;
+          const isActive = safeMode === mode.id;
           return (
             <button
               key={mode.id}

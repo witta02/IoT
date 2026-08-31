@@ -10,7 +10,8 @@ interface LightCardProps {
 }
 
 export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, onSelectMode, disabled }) => {
-  const isLightOn = state.light;
+  const isLightOn = Boolean(state?.light);
+  const safeMode = typeof state?.mode === 'number' ? state.mode : 0;
   const modeLabels = ['ควบคุมเอง', 'ตามเวลา', 'ตามแสงสว่าง'];
 
   const handleToggle = () => {
@@ -34,10 +35,10 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, onSelectM
             isLightOn ? 'bg-[#d4af37] shadow-[0_0_10px_#d4af37]' : 'bg-zinc-700'
           }`} />
           <span className={isLightOn ? 'text-[#d4af37] font-semibold' : 'text-[#8b95a5]'}>
-            {modeLabels[state.mode] || 'ควบคุมเอง'}
+            {modeLabels[safeMode] || 'ควบคุมเอง'}
           </span>
         </span>
-        {state.time && state.time !== '--:--:--' && (
+        {state?.time && state.time !== '--:--:--' && (
           <span className="font-mono text-xs text-[#8b95a5] bg-[#141820] px-2 py-0.5 rounded-md border border-[#222834]">
             {state.time} น.
           </span>
