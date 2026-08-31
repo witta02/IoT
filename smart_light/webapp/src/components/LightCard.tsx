@@ -5,12 +5,13 @@ import { hapticEngine } from '../utils/haptics';
 interface LightCardProps {
   state: SmartLightState;
   onToggle: () => void;
+  onSelectMode?: (mode: number) => void;
   disabled: boolean;
 }
 
-export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled }) => {
+export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, onSelectMode, disabled }) => {
   const isLightOn = state.light;
-  const modeLabels = ['โหมดควบคุมเอง', 'โหมดตั้งเวลา', 'โหมดตรวจจับแสง'];
+  const modeLabels = ['ควบคุมเอง', 'ตามเวลา', 'ตามแสงสว่าง'];
 
   const handleToggle = () => {
     hapticEngine.playHaptic(!isLightOn);
@@ -18,30 +19,39 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
   };
 
   return (
-    <section className="pb-6 mb-6 border-b border-[#222834] select-none flex flex-col items-center">
+    <section className="p-6 bg-[#0e1117]/80 backdrop-blur-xl border border-[#222834]/80 rounded-3xl shadow-2xl select-none flex flex-col items-center relative overflow-hidden transition-all duration-300 hover:border-[#d4af37]/30">
+      {/* Dynamic Background Ambiance Glow */}
+      <div
+        className={`absolute -top-20 -left-20 w-64 h-64 rounded-full pointer-events-none transition-opacity duration-1000 blur-[80px] ${
+          isLightOn ? 'opacity-40 bg-[#d4af37]' : 'opacity-0'
+        }`}
+      />
+
       {/* Header Info Strip */}
-      <div className="w-full flex items-center justify-between text-xs text-[#8b95a5] mb-2">
+      <div className="w-full flex items-center justify-between text-xs text-[#8b95a5] mb-3 z-10">
         <span className="flex items-center gap-2 font-medium">
-          <span className={`w-2 h-2 rounded-full transition-all duration-300 ${
+          <span className={`w-2 h-2 rounded-full transition-all duration-500 ${
             isLightOn ? 'bg-[#d4af37] shadow-[0_0_10px_#d4af37]' : 'bg-zinc-700'
           }`} />
           <span className={isLightOn ? 'text-[#d4af37] font-semibold' : 'text-[#8b95a5]'}>
-            {modeLabels[state.mode] || 'โหมดควบคุมเอง'}
+            {modeLabels[state.mode] || 'ควบคุมเอง'}
           </span>
         </span>
         {state.time && state.time !== '--:--:--' && (
-          <span className="font-mono text-xs text-[#8b95a5]">เวลา {state.time} น.</span>
+          <span className="font-mono text-xs text-[#8b95a5] bg-[#141820] px-2 py-0.5 rounded-md border border-[#222834]">
+            {state.time} น.
+          </span>
         )}
       </div>
 
       {/* ─── ROUND LED BULB HERO ────────────────────────────────────────── */}
-      <div className="relative flex flex-col items-center my-1">
+      <div className="relative flex flex-col items-center my-2 z-10">
         {/* Dynamic Warm Golden Radiant Halo when ON */}
         {isLightOn && (
           <div
             className="absolute top-2 w-72 h-72 rounded-full pointer-events-none transition-opacity duration-700 blur-[64px]"
             style={{
-              background: 'radial-gradient(circle, rgba(212, 175, 55, 0.4) 0%, rgba(212, 175, 55, 0.1) 50%, transparent 80%)'
+              background: 'radial-gradient(circle, rgba(212, 175, 55, 0.45) 0%, rgba(212, 175, 55, 0.12) 50%, transparent 80%)'
             }}
           />
         )}
@@ -52,13 +62,13 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
           disabled={disabled}
           className="relative group p-1 rounded-2xl cursor-pointer disabled:opacity-40 select-none outline-none transition-transform duration-200 active:scale-95 z-10"
         >
-          <svg viewBox="40 0 120 135" className="w-40 h-44 overflow-visible">
+          <svg viewBox="40 0 120 135" className="w-44 h-48 overflow-visible">
             <defs>
               <linearGradient id="gold-threads" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="#1e180d" />
                 <stop offset="25%" stopColor="#856427" />
                 <stop offset="50%" stopColor="#3d2f13" />
-                <stop offset="75%" stop-color="#a37c32" />
+                <stop offset="75%" stopColor="#a37c32" />
                 <stop offset="100%" stopColor="#161208" />
               </linearGradient>
 
@@ -85,7 +95,7 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
               <radialGradient id="gold-dome-off" cx="40%" cy="35%" r="60%">
                 <stop offset="0%" stopColor="#4a4233" stopOpacity="0.35" />
                 <stop offset="50%" stopColor="#292723" stopOpacity="0.6" />
-                <stop offset="90%" stop-color="#1a1c22" stopOpacity="0.85" />
+                <stop offset="90%" stopColor="#1a1c22" stopOpacity="0.85" />
                 <stop offset="100%" stopColor="#0f1116" stopOpacity="0.95" />
               </radialGradient>
 
@@ -100,53 +110,52 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
               </filter>
             </defs>
 
-            {/* 1. Suspension Cord */}
-            <line x1="100" y1="0" x2="100" y2="25" stroke="#1d222b" strokeWidth="5" strokeLinecap="round" />
-
-            {/* 2. E27 Threaded Screw Base */}
-            <rect x="82" y="25" width="36" height="6" rx="1.5" fill="url(#gold-threads)" stroke="#0e0b06" strokeWidth="1" />
-            <path d="M82 31 Q100 33 118 31 L118 37 Q100 39 82 37 Z" fill="url(#gold-threads)" stroke="#0e0b06" strokeWidth="0.8" />
-            <path d="M82 37 Q100 39 118 37 L118 43 Q100 45 82 43 Z" fill="url(#gold-threads)" stroke="#0e0b06" strokeWidth="0.8" />
-            <path d="M82 43 Q100 45 118 43 L118 49 Q100 51 82 49 Z" fill="url(#gold-threads)" stroke="#0e0b06" strokeWidth="0.8" />
-            <rect x="80" y="49" width="40" height="5" rx="1.5" fill="#181510" stroke="#0e0b06" strokeWidth="0.8" />
-
-            {/* 3. Tapered Heat-Sink Body */}
+            {/* Brass Screw Base */}
             <path
-              d="M 80 54 L 68 120 Q 100 126 132 120 L 120 54 Z"
-              fill="url(#obsidian-heatsink)"
-              stroke="#262d3a"
-              strokeWidth="1.5"
+              d="M 88 126 C 92 126, 108 126, 112 126 C 114 130, 112 133, 100 133 C 88 133, 86 130, 88 126 Z"
+              fill="#2b2314"
             />
-            <line x1="88" y1="62" x2="82" y2="114" stroke="#0e1014" strokeWidth="1.5" opacity="0.8" />
-            <line x1="100" y1="62" x2="100" y2="118" stroke="#0e1014" strokeWidth="1.5" opacity="0.8" />
-            <line x1="112" y1="62" x2="118" y2="114" stroke="#0e1014" strokeWidth="1.5" opacity="0.8" />
-            <ellipse cx="100" cy="120" rx="34" ry="7" fill="url(#gold-collar)" stroke="#5c4314" strokeWidth="1.2" />
+            <rect x="86" y="112" width="28" height="3" rx="1.5" fill="url(#gold-threads)" />
+            <rect x="85" y="117" width="30" height="3" rx="1.5" fill="url(#gold-threads)" />
+            <rect x="86" y="122" width="28" height="3" rx="1.5" fill="url(#gold-threads)" />
 
-            {/* 4. Round LED Dome Globe */}
+            {/* Heatsink Collar */}
             <path
-              d="M 66 120 C 50 102, 50 68, 72 46 C 88 30, 112 30, 128 46 C 150 68, 150 102, 134 120 Z"
+              d="M 82 98 L 118 98 L 115 110 L 85 110 Z"
+              fill="url(#obsidian-heatsink)"
+              stroke="#222834"
+              strokeWidth="0.8"
+            />
+            <rect x="80" y="95" width="40" height="3.5" rx="1" fill="url(#gold-collar)" />
+
+            {/* Glass Bulb Dome */}
+            <path
+              d="M 100 12 C 65 12, 48 44, 60 76 C 68 94, 80 96, 82 96 L 118 96 C 120 96, 132 94, 140 76 C 152 44, 135 12, 100 12 Z"
               fill={isLightOn ? "url(#gold-dome-on)" : "url(#gold-dome-off)"}
               stroke={isLightOn ? "#d4af37" : "#3b362a"}
               strokeWidth={isLightOn ? "2.5" : "1.8"}
-              filter={isLightOn ? "url(#gold-bulb-bloom)" : undefined}
+              filter={isLightOn ? "url(#gold-bulb-bloom)" : "none"}
               className="transition-all duration-500"
             />
 
-            {/* 5. Center Core Radiant Gold Glow */}
+            {/* Internal Filament & Core */}
             {isLightOn && (
-              <ellipse
-                cx="100"
-                cy="80"
-                rx="34"
-                ry="28"
-                fill="#fffdf0"
-                opacity="0.95"
-                filter="url(#gold-bulb-bloom)"
-                className="animate-pulse"
-              />
+              <g className="animate-pulse">
+                <line x1="92" y1="95" x2="95" y2="58" stroke="#fef08a" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+                <line x1="108" y1="95" x2="105" y2="58" stroke="#fef08a" strokeWidth="1.5" strokeLinecap="round" opacity="0.8" />
+                <path
+                  d="M 95 58 Q 100 50, 105 58"
+                  fill="none"
+                  stroke="#ffffff"
+                  strokeWidth="2.8"
+                  strokeLinecap="round"
+                  filter="url(#gold-bulb-bloom)"
+                />
+                <circle cx="100" cy="54" r="9" fill="#ffffff" opacity="0.9" filter="url(#gold-bulb-bloom)" />
+              </g>
             )}
 
-            {/* 6. Spherical Specular Curved Shine */}
+            {/* Glossy Specular Arc Reflections */}
             <path
               d="M 76 66 A 32 32 0 0 1 114 44"
               fill="none"
@@ -164,8 +173,8 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
           </svg>
         </button>
 
-        {/* State Label */}
-        <div className="mt-1 text-center flex items-center justify-center gap-3">
+        {/* State Headline */}
+        <div className="mt-2 text-center flex items-center justify-center gap-3">
           <div className={`text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center justify-center gap-2.5 ${
             isLightOn ? 'text-[#d4af37]' : 'text-zinc-500'
           }`}>
@@ -181,7 +190,7 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
         </div>
 
         {/* ─── ARCHITECTURAL SMART WALL LIGHT SWITCH ───────────────────── */}
-        <div className="mt-3 w-64">
+        <div className="mt-4 w-64 sm:w-72">
           <button
             onClick={handleToggle}
             disabled={disabled}
@@ -201,9 +210,9 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
               </span>
 
               {/* Physical Rocker Switch Knob */}
-              <div className={`absolute top-1 bottom-1 w-28 rounded-lg flex items-center justify-center gap-2 transition-all duration-300 shadow-md ${
+              <div className={`absolute top-1 bottom-1 w-32 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-md ${
                 isLightOn
-                  ? 'right-1 bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] shadow-[0_0_14px_rgba(212,175,55,0.5)]'
+                  ? 'right-1 bg-gradient-to-r from-[#fef08a] via-[#d4af37] to-[#b45309] text-[#07080a] shadow-[0_0_16px_rgba(212,175,55,0.5)]'
                   : 'left-1 bg-[#1c222d] border border-[#2b3444] text-[#8b95a5]'
               }`}>
                 {/* Switch LED Indicator Slot */}
@@ -212,11 +221,11 @@ export const LightCard: React.FC<LightCardProps> = ({ state, onToggle, disabled 
                 }`} />
                 
                 {/* Power Symbol & Action Text */}
-                <span className="text-xs font-bold font-mono flex items-center gap-1">
+                <span className="text-xs font-bold font-mono flex items-center gap-1.5">
                   <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-none stroke-current stroke-2">
                     <path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0" strokeLinecap="round" />
                   </svg>
-                  {isLightOn ? 'เปิด' : 'ปิด'}
+                  {isLightOn ? 'แตะเพื่อปิด' : 'แตะเพื่อเปิด'}
                 </span>
               </div>
 

@@ -293,7 +293,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen px-4 py-8 sm:px-6 max-w-lg mx-auto flex flex-col justify-between">
+    <div className="min-h-screen px-4 py-6 sm:py-8 sm:px-6 max-w-4xl mx-auto flex flex-col justify-between">
       <div>
         <Navbar
           connection={connection}
@@ -302,43 +302,65 @@ export const App: React.FC = () => {
           isSyncing={isSyncing}
         />
 
-        <main>
-          <LightCard
-            state={state}
-            onToggle={handleToggle}
-            disabled={false}
-          />
-
-          <ModeSelector
-            currentMode={state.mode}
-            onSelectMode={handleSelectMode}
-            disabled={false}
-          />
-
-          {state.mode === 2 && (
-            <LdrSensorCard
-              ldrValue={state.ldrValue}
-              ldrThreshold={state.ldrThreshold}
-              onUpdateThreshold={handleUpdateThreshold}
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Hero Luminaire Control Card */}
+          <div className="lg:col-span-6 flex flex-col gap-5">
+            <LightCard
+              state={state}
+              onToggle={handleToggle}
+              onSelectMode={handleSelectMode}
               disabled={false}
             />
-          )}
+          </div>
 
-          {state.mode === 1 && (
-            <ScheduleCard
-              onHour={state.onHour}
-              onMin={state.onMin}
-              offHour={state.offHour}
-              offMin={state.offMin}
-              onSaveSchedule={handleSaveSchedule}
+          {/* Right Column: Intelligent Automations Deck */}
+          <div className="lg:col-span-6 flex flex-col gap-5">
+            <ModeSelector
+              currentMode={state.mode}
+              onSelectMode={handleSelectMode}
               disabled={false}
             />
-          )}
+
+            {state.mode === 2 && (
+              <LdrSensorCard
+                ldrValue={state.ldrValue}
+                ldrThreshold={state.ldrThreshold}
+                onUpdateThreshold={handleUpdateThreshold}
+                disabled={false}
+              />
+            )}
+
+            {state.mode === 1 && (
+              <ScheduleCard
+                onHour={state.onHour}
+                onMin={state.onMin}
+                offHour={state.offHour}
+                offMin={state.offMin}
+                onSaveSchedule={handleSaveSchedule}
+                disabled={false}
+              />
+            )}
+
+            {state.mode === 0 && (
+              <div className="p-6 bg-[#0e1117]/80 backdrop-blur-xl border border-[#222834]/80 rounded-3xl shadow-xl flex flex-col items-center text-center">
+                <div className="w-10 h-10 rounded-2xl bg-[#141820] border border-[#222834] flex items-center justify-center mb-3">
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#d4af37] fill-none stroke-current stroke-2">
+                    <path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <h3 className="text-xs font-bold text-[#fcfbfa] mb-1">โหมดควบคุมด้วยตนเอง</h3>
+                <p className="text-[11px] text-[#8b95a5] leading-relaxed max-w-xs">
+                  ควบคุมการเปิด-ปิดได้ทันทีผ่านสวิตช์บนหน้าจอ หรือกดปุ่มจริงที่ตัวโคมไฟโดยตรง
+                </p>
+              </div>
+            )}
+          </div>
         </main>
       </div>
 
-      <footer className="pt-8 pb-4 text-center text-xs text-[#8b95a5]">
-        All Light • สวิตช์ปุ่มกดฮาร์ดแวร์ทำงานได้ตลอดเวลาแม้ออฟไลน์
+      <footer className="pt-10 pb-4 text-center text-xs text-[#8b95a5] flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#222834]/40 mt-10">
+        <span>All Light • Autonomous Smart Luminaire</span>
+        <span className="text-[11px] text-[#505a6a]">ตอบสนองทันที &lt; 15ms</span>
       </footer>
 
       <ConnectionModal

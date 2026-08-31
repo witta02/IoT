@@ -20,29 +20,29 @@ export const Navbar: React.FC<NavbarProps> = ({
   const getConnectionBadge = () => {
     if (!isConnected) {
       return (
-        <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#141820] hover:bg-[#1a202c] text-[#8b95a5] hover:text-[#fcfbfa] border border-[#222834] font-semibold cursor-pointer">
+        <span className="text-xs px-3.5 py-2 rounded-xl bg-[#141820] hover:bg-[#1a202c] text-[#8b95a5] hover:text-[#fcfbfa] border border-[#222834] font-semibold cursor-pointer transition-all shadow-sm">
           เชื่อมต่อโคมไฟ
         </span>
       );
     }
     if (connection.mode === 'ble') {
       return (
-        <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+        <span className="text-xs px-3.5 py-2 rounded-xl bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(212,175,55,0.25)] transition-all">
           <span className="w-2 h-2 rounded-full bg-[#d4af37] shadow-[0_0_6px_#d4af37]" />
-          เชื่อมต่อแล้ว (บลูทูธ)
+          บลูทูธ (เชื่อมต่อแล้ว)
         </span>
       );
     }
     if (connection.mode === 'mqtt') {
       return (
-        <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+        <span className="text-xs px-3.5 py-2 rounded-xl bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(212,175,55,0.25)] transition-all">
           <span className="w-2 h-2 rounded-full bg-[#d4af37] shadow-[0_0_6px_#d4af37] animate-pulse" />
           ออนไลน์ (อินเทอร์เน็ต)
         </span>
       );
     }
     return (
-      <span className="text-xs px-3.5 py-1.5 rounded-lg bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+      <span className="text-xs px-3.5 py-2 rounded-xl bg-[#d4af37]/15 border border-[#d4af37]/40 text-[#d4af37] font-bold cursor-pointer flex items-center gap-1.5 shadow-[0_0_12px_rgba(212,175,55,0.25)] transition-all">
         <span className="w-2 h-2 rounded-full bg-[#d4af37]" />
         เชื่อมต่อแล้ว (Wi-Fi)
       </span>
@@ -50,24 +50,27 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-5 mb-6 border-b border-[#222834] select-none text-center sm:text-left">
+    <header className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 mb-6 border-b border-[#222834]/80 select-none text-center sm:text-left">
       <div className="flex items-center gap-3">
-        <AllightLogo size={36} />
+        <AllightLogo size={42} interactive={true} />
         <div className="flex flex-col items-center sm:items-start">
-          <h1 className="text-base font-bold tracking-tight text-[#fcfbfa] flex items-center gap-2">
+          <h1 className="text-lg font-extrabold tracking-tight text-[#fcfbfa] flex items-center gap-2">
             All Light
           </h1>
           <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ</p>
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-2.5">
         <button
           onClick={onRefresh}
           disabled={isSyncing || !isConnected}
-          className="text-xs px-3 py-1.5 rounded-lg bg-[#141820] hover:bg-[#1a202c] text-[#8b95a5] hover:text-[#fcfbfa] border border-[#222834] transition-colors disabled:opacity-30 cursor-pointer select-none"
+          className="text-xs px-3.5 py-2 rounded-xl bg-[#141820] hover:bg-[#1a202c] text-[#8b95a5] hover:text-[#fcfbfa] border border-[#222834] transition-all disabled:opacity-30 cursor-pointer select-none font-medium flex items-center gap-1.5"
         >
-          {isSyncing ? 'กำลังอัปเดต...' : 'อัปเดตสถานะ'}
+          <svg className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+          </svg>
+          {isSyncing ? 'กำลังซิงค์...' : 'รีเฟรช'}
         </button>
 
         <div onClick={onOpenConnectModal}>
