@@ -359,11 +359,6 @@ export const App: React.FC = () => {
         </main>
       </div>
 
-      <footer className="pt-10 pb-4 text-center text-xs text-[#8b95a5] flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-[#222834]/40 mt-10">
-        <span>All Light • Autonomous Smart Luminaire</span>
-        <span className="text-[11px] text-[#505a6a]">ตอบสนองทันที &lt; 15ms</span>
-      </footer>
-
       <ConnectionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

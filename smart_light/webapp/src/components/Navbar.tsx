@@ -1,6 +1,5 @@
 import React from 'react';
 import type { DeviceConnection } from '../types';
-import { AllightLogo } from './AllightLogo';
 
 interface NavbarProps {
   connection: DeviceConnection;
@@ -51,14 +50,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-6 mb-6 border-b border-[#222834]/80 select-none text-center sm:text-left">
-      <div className="flex items-center gap-3">
-        <AllightLogo size={42} interactive={true} />
-        <div className="flex flex-col items-center sm:items-start">
-          <h1 className="text-lg font-extrabold tracking-tight text-[#fcfbfa] flex items-center gap-2">
-            All Light
-          </h1>
-          <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ</p>
-        </div>
+      <div className="flex flex-col items-center sm:items-start">
+        <h1 className="text-xl font-extrabold tracking-tight text-[#fcfbfa] flex items-center gap-2">
+          All Light
+        </h1>
+        <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ</p>
       </div>
 
       <div className="flex items-center justify-center gap-2.5">
