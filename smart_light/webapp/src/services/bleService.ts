@@ -35,17 +35,21 @@ export class BleService {
     this.onDisconnectCallback = onDisconnect;
 
     try {
-      console.log('📱 Scanning for ESP32 Smart Light BLE device...');
+      console.log('[BLE] Scanning for All Light BLE device...');
       
       this.device = await navigator.bluetooth.requestDevice({
         filters: [
+          { name: 'allight' },
+          { namePrefix: 'allight' },
+          { name: 'All Light' },
+          { namePrefix: 'All Light' },
           { namePrefix: 'ESP32' },
           { services: [BLE_SERVICE_UUID] }
         ],
         optionalServices: [BLE_SERVICE_UUID]
       }).catch(async (err) => {
-        // Fallback for some browsers / broad scans
-        console.warn('Strict filter failed, attempting open scan...', err);
+        // Fallback for broad scans if name filter is not matched
+        console.warn('[BLE] Filter scan failed, attempting open scan...', err);
         return await navigator.bluetooth.requestDevice({
           acceptAllDevices: true,
           optionalServices: [BLE_SERVICE_UUID]

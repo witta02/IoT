@@ -1,7 +1,7 @@
 import type { SmartLightState } from '../types';
 
 export class ApiService {
-  private baseUrl: string = 'http://smartlight.local';
+  private baseUrl: string = 'http://allight.local';
   private pollingTimer: number | null = null;
 
   public setBaseUrl(url: string) {

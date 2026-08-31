@@ -29,7 +29,7 @@ class MqttService {
       const url = options.wsUrl || MQTT_WS_URL;
       const clientId = 'smartlight-web-' + Math.random().toString(16).substring(2, 8);
 
-      console.log('☁️ [MQTT] Connecting to:', url);
+      console.log('[MQTT] Connecting to:', url);
 
       this.client = mqtt.connect(url, {
         clientId,
@@ -40,7 +40,7 @@ class MqttService {
       });
 
       this.client.on('connect', () => {
-        console.log('☁️ [MQTT] Connected to Global Cloud Broker!');
+        console.log('[MQTT] Connected to Global Cloud Broker');
         this.client?.subscribe(MQTT_TOPIC_STATE, (err) => {
           if (err) {
             console.error('MQTT subscribe error:', err);

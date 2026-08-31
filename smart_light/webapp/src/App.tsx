@@ -46,8 +46,9 @@ export const App: React.FC = () => {
   useEffect(() => {
     let unmounted = false;
     const tryAutoConnect = async () => {
-      // 1. If loaded from ESP32 local web server
-      if (window.location.hostname && window.location.hostname !== 'localhost') {
+      // 1. If loaded directly from ESP32 local web server
+      const isCloudHost = window.location.hostname.includes('github.io') || window.location.hostname.includes('vercel.app') || window.location.hostname === 'localhost';
+      if (window.location.protocol === 'http:' && !isCloudHost) {
         try {
           apiService.setBaseUrl(`http://${window.location.hostname}`);
           const data = await apiService.getStatus();

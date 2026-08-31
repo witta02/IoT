@@ -82,7 +82,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
             </span>
           </div>
 
-          {/* Time Selectors (Hour & Minute Dropdowns + Steppers) */}
+          {/* Time Selectors (Pure Numbers) */}
           <div className="flex items-center justify-center gap-2 py-1 w-full">
             {/* Hour Select */}
             <div className="flex flex-col items-center flex-1">
@@ -90,18 +90,17 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 value={onH}
                 onChange={(e) => setOnH(Number(e.target.value))}
                 disabled={disabled}
-                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 px-2 text-center font-mono text-xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
+                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 text-center font-mono text-2xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i} className="bg-[#0e1117] text-[#fcfbfa]">
-                    {format2(i)} น.
+                    {format2(i)}
                   </option>
                 ))}
               </select>
-              <span className="text-[10px] text-[#8b95a5] mt-1 font-medium">ชั่วโมง</span>
             </div>
 
-            <span className="font-mono text-2xl font-bold text-[#505a6a] pb-4">:</span>
+            <span className="font-mono text-2xl font-bold text-[#505a6a]">:</span>
 
             {/* Minute Select */}
             <div className="flex flex-col items-center flex-1">
@@ -109,15 +108,14 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 value={onM}
                 onChange={(e) => setOnM(Number(e.target.value))}
                 disabled={disabled}
-                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 px-2 text-center font-mono text-xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
+                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 text-center font-mono text-2xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
               >
                 {Array.from({ length: 60 }, (_, i) => (
                   <option key={i} value={i} className="bg-[#0e1117] text-[#fcfbfa]">
-                    {format2(i)} นาที
+                    {format2(i)}
                   </option>
                 ))}
               </select>
-              <span className="text-[10px] text-[#8b95a5] mt-1 font-medium">นาที</span>
             </div>
           </div>
         </div>
@@ -134,7 +132,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
             </span>
           </div>
 
-          {/* Time Selectors (Hour & Minute Dropdowns + Steppers) */}
+          {/* Time Selectors (Pure Numbers) */}
           <div className="flex items-center justify-center gap-2 py-1 w-full">
             {/* Hour Select */}
             <div className="flex flex-col items-center flex-1">
@@ -142,18 +140,17 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 value={offH}
                 onChange={(e) => setOffH(Number(e.target.value))}
                 disabled={disabled}
-                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 px-2 text-center font-mono text-xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
+                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 text-center font-mono text-2xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
               >
                 {Array.from({ length: 24 }, (_, i) => (
                   <option key={i} value={i} className="bg-[#0e1117] text-[#fcfbfa]">
-                    {format2(i)} น.
+                    {format2(i)}
                   </option>
                 ))}
               </select>
-              <span className="text-[10px] text-[#8b95a5] mt-1 font-medium">ชั่วโมง</span>
             </div>
 
-            <span className="font-mono text-2xl font-bold text-[#505a6a] pb-4">:</span>
+            <span className="font-mono text-2xl font-bold text-[#505a6a]">:</span>
 
             {/* Minute Select */}
             <div className="flex flex-col items-center flex-1">
@@ -161,15 +158,14 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
                 value={offM}
                 onChange={(e) => setOffM(Number(e.target.value))}
                 disabled={disabled}
-                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 px-2 text-center font-mono text-xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
+                className="w-full bg-[#0e1117] border border-[#272e3b] hover:border-[#d4af37]/50 rounded-xl py-2.5 text-center font-mono text-2xl font-bold text-[#fcfbfa] focus:outline-none focus:border-[#d4af37] cursor-pointer appearance-none text-center"
               >
                 {Array.from({ length: 60 }, (_, i) => (
                   <option key={i} value={i} className="bg-[#0e1117] text-[#fcfbfa]">
-                    {format2(i)} นาที
+                    {format2(i)}
                   </option>
                 ))}
               </select>
-              <span className="text-[10px] text-[#8b95a5] mt-1 font-medium">นาที</span>
             </div>
           </div>
         </div>
