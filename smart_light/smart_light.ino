@@ -111,6 +111,12 @@ unsigned long lastBleNotify    = 0;
 unsigned long lastPrefSave     = 0;
 bool          pendingPrefSave  = false;
 
+// LDR Optical Feedback & Debounce Timers
+unsigned long ldrDarkStartTime    = 0;
+unsigned long ldrBrightStartTime  = 0;
+unsigned long lastLightToggleTime = 0;
+const unsigned long LDR_DEBOUNCE_MS = 2500;
+
 // Relay Active-HIGH setting (HIGH = ON, LOW = OFF)
 const int RELAY_ON  = HIGH;
 const int RELAY_OFF = LOW;
@@ -290,6 +296,7 @@ void loop() {
 void setLight(bool state, bool manualOverride) {
   if (lightState != state) {
     lightState = state;
+    lastLightToggleTime = millis();
     digitalWrite(PIN_RELAY, lightState ? RELAY_ON : RELAY_OFF);
     digitalWrite(PIN_LED_LED, lightState ? HIGH : LOW);
     
@@ -297,6 +304,8 @@ void setLight(bool state, bool manualOverride) {
     
     if (manualOverride) {
       controlMode = 0; // Switch to manual mode
+      ldrDarkStartTime = 0;
+      ldrBrightStartTime = 0;
     }
 
     pendingPrefSave = true;
@@ -334,10 +343,40 @@ void handleAutoTime() {
 }
 
 void handleAutoLDR() {
-  if (ldrValue < (ldrThreshold - LDR_HYSTERESIS / 2)) {
-    setLight(true, false);
-  } else if (ldrValue > (ldrThreshold + LDR_HYSTERESIS / 2)) {
-    setLight(false, false);
+  unsigned long now = millis();
+
+  // Guard window: when light just toggled, wait at least 3.5s before sensor can change it again (prevents self-blinding loop)
+  if (now - lastLightToggleTime < 3500) {
+    return;
+  }
+
+  bool isDark   = (ldrValue < (ldrThreshold - LDR_HYSTERESIS / 2));
+  bool isBright = (ldrValue > (ldrThreshold + LDR_HYSTERESIS / 2));
+
+  if (!lightState && isDark) {
+    // Light is OFF and sensor detects DARK: require sustained darkness for 2.5s before turning ON
+    if (ldrDarkStartTime == 0) {
+      ldrDarkStartTime = now;
+    } else if (now - ldrDarkStartTime > LDR_DEBOUNCE_MS) {
+      setLight(true, false);
+      ldrDarkStartTime = 0;
+      ldrBrightStartTime = 0;
+    }
+  } else {
+    ldrDarkStartTime = 0;
+  }
+
+  if (lightState && isBright) {
+    // Light is ON and sensor detects persistent DAYLIGHT: require 5s of sustained daylight before turning OFF
+    if (ldrBrightStartTime == 0) {
+      ldrBrightStartTime = now;
+    } else if (now - ldrBrightStartTime > (LDR_DEBOUNCE_MS * 2)) {
+      setLight(false, false);
+      ldrBrightStartTime = 0;
+      ldrDarkStartTime = 0;
+    }
+  } else {
+    ldrBrightStartTime = 0;
   }
 }
 
