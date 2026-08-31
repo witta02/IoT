@@ -81,10 +81,19 @@ export class BleService {
         const initialVal = await this.txCharacteristic.readValue();
         this.parseAndDispatch(initialVal);
       } catch (readErr) {
-        console.log('Could not read initial value directly, waiting for notify:', readErr);
+        console.log('[BLE] Waiting for notify state:', readErr);
       }
 
-      return this.device.name || 'ESP32-SmartLight';
+      // Automatically synchronize phone time to ESP32 internal RTC clock
+      try {
+        const epoch = Math.floor(Date.now() / 1000);
+        await this.sendCommand({ action: 'syncTime', epoch });
+        console.log('[BLE] Phone time automatically synchronized to ESP32 clock');
+      } catch (syncErr) {
+        console.warn('[BLE] Could not auto-sync clock:', syncErr);
+      }
+
+      return this.device.name || 'All Light';
     } catch (err: any) {
       this.disconnect();
       throw err;
@@ -100,7 +109,7 @@ export class BleService {
     const encoder = new TextEncoder();
     const data = encoder.encode(jsonStr);
 
-    console.log('📱 [BLE TX] Sending:', jsonStr);
+    console.log('[BLE TX] Sending:', jsonStr);
     
     if (this.rxCharacteristic.writeValueWithResponse) {
       await this.rxCharacteristic.writeValueWithResponse(data);

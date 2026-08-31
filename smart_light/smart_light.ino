@@ -592,6 +592,25 @@ void handleCommandJson(const String& body) {
       scheduleOnHour, scheduleOnMin, scheduleOffHour, scheduleOffMin);
   }
 
+  // Time Synchronization from Phone/Browser
+  if (body.indexOf("\"epoch\"") >= 0 || body.indexOf("\"action\":\"syncTime\"") >= 0) {
+    int idx = body.indexOf("\"epoch\"");
+    if (idx >= 0) {
+      int colon = body.indexOf(':', idx);
+      if (colon >= 0) {
+        time_t epochTime = (time_t)body.substring(colon + 1).toInt();
+        if (epochTime > 100000) {
+          struct timeval tv;
+          tv.tv_sec = epochTime;
+          tv.tv_usec = 0;
+          settimeofday(&tv, NULL);
+          Serial.printf("[RTC Sync] Clock synchronized from device: %s\n", getCurrentTimeStr().c_str());
+          updated = true;
+        }
+      }
+    }
+  }
+
   if (updated) {
     pendingPrefSave = true;
     lastPrefSave = millis();

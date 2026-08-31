@@ -45,6 +45,8 @@ class MqttService {
           if (err) {
             console.error('MQTT subscribe error:', err);
           } else {
+            const epoch = Math.floor(Date.now() / 1000);
+            this.sendCommand({ action: 'syncTime', epoch });
             this.sendCommand({ action: 'getStatus' });
           }
         });
