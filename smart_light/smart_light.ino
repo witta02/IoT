@@ -24,6 +24,8 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
 #include "webpage.h"
 
 // ─── BLE UUID DEFINITIONS ──────────────────────────────────────────────────
@@ -172,6 +174,9 @@ class BleRxCallbacks: public BLECharacteristicCallbacks {
 //  SETUP
 // ══════════════════════════════════════════════════════════════════════════
 void setup() {
+  // 0. Disable Brownout Detector to prevent reboot from 220V inrush/spark EMI
+  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
   Serial.begin(115200);
   delay(100);
 
@@ -316,12 +321,33 @@ void setLight(bool state, bool manualOverride) {
   }
 }
 
+// ─── FAIL-SAFE NON-BLOCKING BUTTON CONTROLLER ─────────────────────────────
 void handleButton() {
-  if (buttonTriggered) {
-    buttonTriggered = false;
-    Serial.println("[Button] Hardware Interrupt: Toggle Relay");
-    setLight(!lightState, true);
+  static unsigned long lastDebounceTime = 0;
+  static int lastButtonState = HIGH;
+  static int buttonState = HIGH;
+
+  int reading = digitalRead(PIN_BUTTON);
+
+  // If pin changed state (either via interrupt or polling)
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();
   }
+
+  if ((millis() - lastDebounceTime) > 40) { // 40ms rock-solid noise filter
+    if (reading != buttonState) {
+      buttonState = reading;
+      
+      // Button transition from HIGH to LOW (Pressed)
+      if (buttonState == LOW) {
+        Serial.println("[Button] Verified Physical Press -> Toggle Relay (100% Independent)");
+        setLight(!lightState, true);
+      }
+    }
+  }
+
+  lastButtonState = reading;
+  buttonTriggered = false; // Clear interrupt flag safely
 }
 
 void handleAutoTime() {
