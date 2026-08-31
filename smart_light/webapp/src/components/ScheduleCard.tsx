@@ -17,17 +17,17 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
   onSaveSchedule,
   disabled
 }) => {
-  const [onH, setOnH] = useState(onHour);
-  const [onM, setOnM] = useState(onMin);
-  const [offH, setOffH] = useState(offHour);
-  const [offM, setOffM] = useState(offMin);
+  const [onH, setOnH] = useState(Number(onHour) || 0);
+  const [onM, setOnM] = useState(Number(onMin) || 0);
+  const [offH, setOffH] = useState(Number(offHour) || 0);
+  const [offM, setOffM] = useState(Number(offMin) || 0);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    setOnH(onHour);
-    setOnM(onMin);
-    setOffH(offHour);
-    setOffM(offMin);
+    setOnH(Number(onHour) || 0);
+    setOnM(Number(onMin) || 0);
+    setOffH(Number(offHour) || 0);
+    setOffM(Number(offMin) || 0);
   }, [onHour, onMin, offHour, offMin]);
 
   const handleSave = () => {
@@ -46,7 +46,11 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
     setTimeout(() => setSaved(false), 2000);
   };
 
-  const format2 = (n: number) => n.toString().padStart(2, '0');
+  const format2 = (n: any) => {
+    const val = Number(n);
+    if (isNaN(val)) return '00';
+    return Math.max(0, Math.floor(val)).toString().padStart(2, '0');
+  };
 
   return (
     <section className="p-6 bg-[#0e1117]/80 backdrop-blur-xl border border-[#222834]/80 rounded-3xl shadow-xl transition-all duration-300 hover:border-[#d4af37]/30 select-none flex flex-col items-center text-center">

@@ -424,6 +424,7 @@ String getCurrentTimeStr() {
 // ══════════════════════════════════════════════════════════════════════════
 void setupBLE() {
   BLEDevice::init(BLE_DEVICE_NAME);
+  BLEDevice::setMTU(517); // Allow full JSON state transmission without ATT MTU truncation
   pBleServer = BLEDevice::createServer();
   pBleServer->setCallbacks(new BleServerCallbacks());
 

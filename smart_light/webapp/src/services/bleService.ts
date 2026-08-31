@@ -8,7 +8,7 @@ export class BleService {
   private device: BluetoothDevice | null = null;
   private rxCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private txCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
-  private onStatusCallback: ((status: SmartLightState) => void) | null = null;
+  private onStatusCallback: ((status: Partial<SmartLightState>) => void) | null = null;
   private onDisconnectCallback: (() => void) | null = null;
 
   public isSupported(): boolean {
@@ -24,7 +24,7 @@ export class BleService {
   }
 
   public async connect(
-    onStatus: (status: SmartLightState) => void,
+    onStatus: (status: Partial<SmartLightState>) => void,
     onDisconnect: () => void
   ): Promise<string> {
     if (!this.isSupported()) {
@@ -153,19 +153,34 @@ export class BleService {
   private parseAndDispatch(dataView: DataView) {
     try {
       const decoder = new TextDecoder('utf-8');
-      const jsonStr = decoder.decode(dataView);
-      console.log('📱 [BLE RX] Received status:', jsonStr);
-      const parsed: SmartLightState = JSON.parse(jsonStr);
-      if (this.onStatusCallback) {
-        this.onStatusCallback(parsed);
+      const jsonStr = decoder.decode(dataView).trim();
+      console.log('[BLE RX] Received status:', jsonStr);
+      
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && typeof parsed === 'object') {
+        const safeState: Partial<SmartLightState> = {};
+        if (typeof parsed.light !== 'undefined') safeState.light = Boolean(parsed.light);
+        if (typeof parsed.mode !== 'undefined') safeState.mode = Number(parsed.mode) || 0;
+        if (typeof parsed.ldrValue !== 'undefined') safeState.ldrValue = Number(parsed.ldrValue) || 0;
+        if (typeof parsed.ldrThreshold !== 'undefined') safeState.ldrThreshold = Number(parsed.ldrThreshold) || 1500;
+        if (typeof parsed.onHour !== 'undefined') safeState.onHour = Number(parsed.onHour) || 0;
+        if (typeof parsed.onMin !== 'undefined') safeState.onMin = Number(parsed.onMin) || 0;
+        if (typeof parsed.offHour !== 'undefined') safeState.offHour = Number(parsed.offHour) || 0;
+        if (typeof parsed.offMin !== 'undefined') safeState.offMin = Number(parsed.offMin) || 0;
+        if (typeof parsed.time === 'string') safeState.time = parsed.time;
+        safeState.ble = true;
+
+        if (this.onStatusCallback) {
+          this.onStatusCallback(safeState);
+        }
       }
     } catch (err) {
-      console.error('Failed to parse BLE notification packet:', err);
+      console.error('[BLE] Failed to parse BLE notification packet:', err);
     }
   }
 
   private handleDisconnected = () => {
-    console.warn('📱 [BLE] Device disconnected unexpectedly.');
+    console.warn('[BLE] Device disconnected.');
     if (this.onDisconnectCallback) {
       this.onDisconnectCallback();
     }

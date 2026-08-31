@@ -13,14 +13,16 @@ export const LdrSensorCard: React.FC<LdrSensorCardProps> = ({
   onUpdateThreshold,
   disabled
 }) => {
-  const [sliderVal, setSliderVal] = useState(ldrThreshold);
+  const safeThreshold = Number(ldrThreshold) || 1500;
+  const safeLdr = Number(ldrValue) || 0;
+  const [sliderVal, setSliderVal] = useState(safeThreshold);
 
   useEffect(() => {
-    setSliderVal(ldrThreshold);
+    setSliderVal(Number(ldrThreshold) || 1500);
   }, [ldrThreshold]);
 
-  const percentBright = Math.min(100, Math.max(0, Math.round((ldrValue / 4095) * 100)));
-  const isDark = ldrValue < sliderVal;
+  const percentBright = Math.min(100, Math.max(0, Math.round((safeLdr / 4095) * 100)));
+  const isDark = safeLdr < sliderVal;
 
   const handlePresetThreshold = (val: number) => {
     setSliderVal(val);
