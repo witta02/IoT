@@ -24,6 +24,7 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include <vector>
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "webpage.h"
