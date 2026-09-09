@@ -12,6 +12,17 @@ export class BleService {
   private onDisconnectCallback: (() => void) | null = null;
   private onWifiScanCallback: ((networks: WifiNetwork[]) => void) | null = null;
   private onWifiStatusCallback: ((info: { event: string; ssid?: string; status?: string }) => void) | null = null;
+  private gattQueue: Promise<void> = Promise.resolve();
+
+  /** Serialize all GATT operations to prevent 'GATT operation already in progress' */
+  private enqueueGatt<T>(operation: () => Promise<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      this.gattQueue = this.gattQueue
+        .then(() => operation())
+        .then(resolve, reject)
+        .catch(() => {});
+    });
+  }
 
   public isSupported(): boolean {
     return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
@@ -78,9 +89,9 @@ export class BleService {
       await this.txCharacteristic.startNotifications();
       this.txCharacteristic.addEventListener('characteristicvaluechanged', this.handleCharacteristicValueChanged);
 
-      // Try reading initial state
+      // Try reading initial state (queued to prevent GATT overlap)
       try {
-        const initialVal = await this.txCharacteristic.readValue();
+        const initialVal = await this.enqueueGatt(() => this.txCharacteristic!.readValue());
         this.parseAndDispatch(initialVal);
       } catch (readErr) {
         console.log('[BLE] Waiting for notify state:', readErr);
@@ -112,12 +123,14 @@ export class BleService {
     const data = encoder.encode(jsonStr);
 
     console.log('[BLE TX] Sending:', jsonStr);
-    
-    if (this.rxCharacteristic.writeValueWithResponse) {
-      await this.rxCharacteristic.writeValueWithResponse(data);
-    } else {
-      await this.rxCharacteristic.writeValue(data);
-    }
+
+    await this.enqueueGatt(async () => {
+      if (typeof this.rxCharacteristic!.writeValueWithResponse === 'function') {
+        await this.rxCharacteristic!.writeValueWithResponse(data);
+      } else {
+        await this.rxCharacteristic!.writeValue(data);
+      }
+    });
   }
 
   public setWifiScanCallback(cb: ((networks: WifiNetwork[]) => void) | null) {
