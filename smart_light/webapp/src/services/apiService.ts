@@ -1,4 +1,4 @@
-import type { SmartLightState } from '../types';
+import type { SmartLightState, WifiNetwork } from '../types';
 
 export class ApiService {
   private baseUrl: string = 'http://allight.local';
@@ -83,6 +83,37 @@ export class ApiService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ onHour, onMin, offHour, offMin })
     });
+    return await res.json();
+  }
+
+  public async scanWifi(): Promise<WifiNetwork[]> {
+    const res = await fetch(`${this.baseUrl}/api/wifi/scan`);
+    if (!res.ok) throw new Error(`Scan failed: ${res.statusText}`);
+    const data = await res.json();
+    return data.networks || [];
+  }
+
+  public async saveWifi(ssid: string, pass: string): Promise<{ status: string; ssid?: string }> {
+    const res = await fetch(`${this.baseUrl}/api/wifi/save`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ssid, pass })
+    });
+    if (!res.ok) throw new Error(`Save Wi-Fi failed: ${res.statusText}`);
+    return await res.json();
+  }
+
+  public async resetWifi(): Promise<{ status: string }> {
+    const res = await fetch(`${this.baseUrl}/api/wifi/reset`, {
+      method: 'POST'
+    });
+    if (!res.ok) throw new Error(`Reset Wi-Fi failed: ${res.statusText}`);
+    return await res.json();
+  }
+
+  public async getWifiStatus(): Promise<{ connected: boolean; ssid?: string; ip?: string }> {
+    const res = await fetch(`${this.baseUrl}/api/wifi/status`);
+    if (!res.ok) throw new Error(`Get Wi-Fi status failed: ${res.statusText}`);
     return await res.json();
   }
 

@@ -1,4 +1,4 @@
-import type { SmartLightState } from '../types';
+import type { SmartLightState, WifiNetwork } from '../types';
 
 export const BLE_SERVICE_UUID = '4fafc201-1fb5-459e-8fcc-c5c9c331914b';
 export const BLE_RX_UUID = 'beb5483e-36e1-4688-b7f5-ea07361b26a8'; // Write to ESP32
@@ -10,6 +10,8 @@ export class BleService {
   private txCharacteristic: BluetoothRemoteGATTCharacteristic | null = null;
   private onStatusCallback: ((status: Partial<SmartLightState>) => void) | null = null;
   private onDisconnectCallback: (() => void) | null = null;
+  private onWifiScanCallback: ((networks: WifiNetwork[]) => void) | null = null;
+  private onWifiStatusCallback: ((info: { event: string; ssid?: string; status?: string }) => void) | null = null;
 
   public isSupported(): boolean {
     return typeof navigator !== 'undefined' && 'bluetooth' in navigator;
@@ -118,6 +120,26 @@ export class BleService {
     }
   }
 
+  public setWifiScanCallback(cb: ((networks: WifiNetwork[]) => void) | null) {
+    this.onWifiScanCallback = cb;
+  }
+
+  public setWifiStatusCallback(cb: ((info: { event: string; ssid?: string; status?: string }) => void) | null) {
+    this.onWifiStatusCallback = cb;
+  }
+
+  public async scanWifi(): Promise<void> {
+    await this.sendCommand({ action: 'scanWifi' });
+  }
+
+  public async saveWifi(ssid: string, pass: string): Promise<void> {
+    await this.sendCommand({ action: 'setWifi', ssid, pass });
+  }
+
+  public async resetWifi(): Promise<void> {
+    await this.sendCommand({ action: 'resetWifi' });
+  }
+
   public disconnect(): void {
     if (this.txCharacteristic) {
       try {
@@ -158,6 +180,20 @@ export class BleService {
       
       const parsed = JSON.parse(jsonStr);
       if (parsed && typeof parsed === 'object') {
+        if (parsed.event === 'wifiList' && Array.isArray(parsed.networks)) {
+          if (this.onWifiScanCallback) {
+            this.onWifiScanCallback(parsed.networks);
+          }
+          return;
+        }
+
+        if (parsed.event === 'wifiConnecting' || parsed.event === 'wifiReset') {
+          if (this.onWifiStatusCallback) {
+            this.onWifiStatusCallback(parsed);
+          }
+          return;
+        }
+
         const safeState: Partial<SmartLightState> = {};
         if (typeof parsed.light !== 'undefined') safeState.light = Boolean(parsed.light);
         if (typeof parsed.mode !== 'undefined') safeState.mode = Number(parsed.mode) || 0;
@@ -168,6 +204,9 @@ export class BleService {
         if (typeof parsed.offHour !== 'undefined') safeState.offHour = Number(parsed.offHour) || 0;
         if (typeof parsed.offMin !== 'undefined') safeState.offMin = Number(parsed.offMin) || 0;
         if (typeof parsed.time === 'string') safeState.time = parsed.time;
+        if (typeof parsed.ssid === 'string') safeState.ssid = parsed.ssid;
+        if (typeof parsed.ip === 'string') safeState.ip = parsed.ip;
+        if (typeof parsed.wifi !== 'undefined') safeState.wifi = Boolean(parsed.wifi);
         safeState.ble = true;
 
         if (this.onStatusCallback) {

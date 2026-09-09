@@ -34,14 +34,14 @@
 #define CHARACTERISTIC_UUID_RX      "beb5483e-36e1-4688-b7f5-ea07361b26a8" // Write
 #define CHARACTERISTIC_UUID_TX      "beb5483e-36e1-4688-b7f5-ea07361b26a9" // Notify/Read
 
-// ─── WI-FI CONFIGURATION ──────────────────────────────────────────────────
-const bool USE_AP_MODE = false; 
+// ─── WI-FI CONFIGURATION (Dynamic NVS Storage + SoftAP Setup) ───────────
+const char* AP_SSID_DEFAULT = "allight-Setup";
+const char* AP_PASS_DEFAULT = "12345678";
 
-const char* AP_SSID = "allight-AP";
-const char* AP_PASS = "12345678";
+String wifiSsid     = "";
+String wifiPass     = "";
+bool   apModeActive = false;
 
-const char* WIFI_SSID = "Withwin";        // 👈 Put your home Wi-Fi name here
-const char* WIFI_PASS = "Wintidhe1";    // 👈 Put your home Wi-Fi password here
 
 // ─── CLOUD MQTT CONFIGURATION (High-Reliability Global Broker) ─────────────
 const char* MQTT_HOST        = "broker.emqx.io"; // Global public broker (100% compatible with hotspots)
@@ -142,6 +142,9 @@ void     setupMQTT();
 void     handleMQTT();
 void     setupServer();
 void     sendJsonStatusHttp();
+void     connectToNewWifi(const String& ssid, const String& pass);
+void     clearWifiCredentials();
+String   getWifiScanJson();
 
 // ══════════════════════════════════════════════════════════════════════════
 //  BLE SERVER CALLBACKS
@@ -263,27 +266,34 @@ void loop() {
   }
 
   // 8. Wi-Fi Status Check & Async Services
-  if (!USE_AP_MODE) {
-    if (WiFi.status() == WL_CONNECTED) {
-      if (!wifiConnected) {
-        wifiConnected = true;
-        Serial.printf("\n[Wi-Fi] Connected. IP: http://%s\n", WiFi.localIP().toString().c_str());
-        
-        if (!mdnsStarted && MDNS.begin("allight")) {
-          MDNS.addService("http", "tcp", 80);
-          mdnsStarted = true;
-          Serial.println("[mDNS] Hostname Live: http://allight.local");
-        }
-
-        if (!ntpConfigured) {
-          syncNTP();
-          ntpConfigured = true;
-        }
+  if (WiFi.status() == WL_CONNECTED) {
+    if (!wifiConnected) {
+      wifiConnected = true;
+      Serial.printf("\n[Wi-Fi] Connected to '%s'. IP: http://%s\n",
+        WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
+      
+      if (!mdnsStarted && MDNS.begin("allight")) {
+        MDNS.addService("http", "tcp", 80);
+        mdnsStarted = true;
+        Serial.println("[mDNS] Hostname Live: http://allight.local");
       }
-    } else {
-      if (wifiConnected) {
-        wifiConnected = false;
-        Serial.println("[Wi-Fi] Connection lost. Operating in autonomous offline mode.");
+
+      if (!ntpConfigured) {
+        syncNTP();
+        ntpConfigured = true;
+      }
+
+      notifyBleStatus();
+      publishMqttStatus();
+    }
+  } else {
+    if (wifiConnected) {
+      wifiConnected = false;
+      Serial.println("[Wi-Fi] Connection lost. Fallback AP remains accessible.");
+      if (!apModeActive) {
+        WiFi.mode(WIFI_AP_STA);
+        WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT);
+        apModeActive = true;
       }
     }
   }
@@ -326,6 +336,8 @@ void handleButton() {
   static unsigned long lastDebounceTime = 0;
   static int lastButtonState = HIGH;
   static int buttonState = HIGH;
+  static unsigned long buttonPressStart = 0;
+  static bool longPressHandled = false;
 
   int reading = digitalRead(PIN_BUTTON);
 
@@ -340,8 +352,26 @@ void handleButton() {
       
       // Button transition from HIGH to LOW (Pressed)
       if (buttonState == LOW) {
+        buttonPressStart = millis();
+        longPressHandled = false;
         Serial.println("[Button] Verified Physical Press -> Toggle Relay (100% Independent)");
         setLight(!lightState, true);
+      } else {
+        buttonPressStart = 0;
+        longPressHandled = false;
+      }
+    } else if (buttonState == LOW && !longPressHandled && buttonPressStart > 0) {
+      // 5-second continuous hold -> Reset Wi-Fi credentials to setup AP
+      if (millis() - buttonPressStart >= 5000) {
+        longPressHandled = true;
+        Serial.println("[Button] 5-Second Hold Detected -> Erasing Wi-Fi & Starting Setup AP");
+        for (int i = 0; i < 6; ++i) {
+          digitalWrite(PIN_LED_LED, HIGH);
+          delay(70);
+          digitalWrite(PIN_LED_LED, LOW);
+          delay(70);
+        }
+        clearWifiCredentials();
       }
     }
   }
@@ -519,24 +549,74 @@ void handleMQTT() {
 //  COMMAND DISPATCHER & JSON STATUS
 // ══════════════════════════════════════════════════════════════════════════
 String getJsonStatus() {
-  char json[256];
+  char json[340];
+  String currentSsid = wifiConnected ? WiFi.SSID() : (wifiSsid.length() > 0 ? wifiSsid : "");
+  String currentIp   = wifiConnected ? WiFi.localIP().toString() : (apModeActive ? WiFi.softAPIP().toString() : "");
+
   snprintf(json, sizeof(json),
     "{\"light\":%s,\"mode\":%d,\"ldrValue\":%d,\"ldrThreshold\":%d,"
     "\"onHour\":%d,\"onMin\":%d,\"offHour\":%d,\"offMin\":%d,"
-    "\"time\":\"%s\",\"ble\":%s,\"wifi\":%s,\"mqtt\":%s}",
+    "\"time\":\"%s\",\"ble\":%s,\"wifi\":%s,\"mqtt\":%s,\"ssid\":\"%s\",\"ip\":\"%s\"}",
     lightState ? "true" : "false",
     controlMode, ldrValue, ldrThreshold,
     scheduleOnHour, scheduleOnMin, scheduleOffHour, scheduleOffMin,
     getCurrentTimeStr().c_str(),
     bleClientConnected ? "true" : "false",
     wifiConnected ? "true" : "false",
-    mqttClient.connected() ? "true" : "false"
+    mqttClient.connected() ? "true" : "false",
+    currentSsid.c_str(),
+    currentIp.c_str()
   );
   return String(json);
 }
 
 void handleCommandJson(const String& body) {
   bool updated = false;
+
+  // Wi-Fi Configuration Actions via BLE / MQTT / HTTP
+  if (body.indexOf("\"action\":\"scanWifi\"") >= 0) {
+    String scanResult = getWifiScanJson();
+    if (pBleTxCharacteristic != NULL && bleClientConnected) {
+      pBleTxCharacteristic->setValue(scanResult.c_str());
+      pBleTxCharacteristic->notify();
+    }
+    return;
+  }
+
+  if (body.indexOf("\"action\":\"setWifi\"") >= 0) {
+    String targetSsid = "";
+    String targetPass = "";
+
+    int sIdx = body.indexOf("\"ssid\":\"");
+    if (sIdx >= 0) {
+      int sEnd = body.indexOf('"', sIdx + 8);
+      if (sEnd > sIdx) targetSsid = body.substring(sIdx + 8, sEnd);
+    }
+    int pIdx = body.indexOf("\"pass\":\"");
+    if (pIdx >= 0) {
+      int pEnd = body.indexOf('"', pIdx + 8);
+      if (pEnd > pIdx) targetPass = body.substring(pIdx + 8, pEnd);
+    }
+
+    if (targetSsid.length() > 0) {
+      connectToNewWifi(targetSsid, targetPass);
+      if (pBleTxCharacteristic != NULL && bleClientConnected) {
+        String reply = "{\"event\":\"wifiConnecting\",\"ssid\":\"" + targetSsid + "\"}";
+        pBleTxCharacteristic->setValue(reply.c_str());
+        pBleTxCharacteristic->notify();
+      }
+    }
+    return;
+  }
+
+  if (body.indexOf("\"action\":\"resetWifi\"") >= 0) {
+    clearWifiCredentials();
+    if (pBleTxCharacteristic != NULL && bleClientConnected) {
+      pBleTxCharacteristic->setValue("{\"event\":\"wifiReset\"}");
+      pBleTxCharacteristic->notify();
+    }
+    return;
+  }
 
   if (body.indexOf("\"action\":\"toggle\"") >= 0 || body.indexOf("\"toggle\"") >= 0) {
     setLight(!lightState, true);
@@ -623,17 +703,106 @@ void handleCommandJson(const String& body) {
 // ══════════════════════════════════════════════════════════════════════════
 //  WI-FI & WEB SERVER
 // ══════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════
+//  WI-FI MANAGEMENT & SETUP HELPERS
+// ══════════════════════════════════════════════════════════════════════════
+String getWifiScanJson() {
+  Serial.println("[Wi-Fi] Scanning available 2.4GHz networks...");
+  int n = WiFi.scanNetworks(false, false);
+  if (n < 0) {
+    return "{\"event\":\"wifiList\",\"networks\":[]}";
+  }
+
+  struct NetInfo {
+    String ssid;
+    int32_t rssi;
+    bool secure;
+  };
+  std::vector<NetInfo> list;
+  for (int i = 0; i < n; ++i) {
+    String s = WiFi.SSID(i);
+    s.trim();
+    if (s.length() == 0) continue;
+
+    bool found = false;
+    for (auto& item : list) {
+      if (item.ssid == s) {
+        if (WiFi.RSSI(i) > item.rssi) item.rssi = WiFi.RSSI(i);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      list.push_back({s, WiFi.RSSI(i), WiFi.encryptionType(i) != WIFI_AUTH_OPEN});
+    }
+    if (list.size() >= 12) break;
+  }
+  WiFi.scanDelete();
+
+  String json = "{\"event\":\"wifiList\",\"networks\":[";
+  for (size_t i = 0; i < list.size(); ++i) {
+    if (i > 0) json += ",";
+    json += "{\"ssid\":\"" + list[i].ssid + "\",\"rssi\":" + String(list[i].rssi) + ",\"sec\":" + (list[i].secure ? "1" : "0") + "}";
+  }
+  json += "]}";
+  return json;
+}
+
+void connectToNewWifi(const String& ssid, const String& pass) {
+  wifiSsid = ssid;
+  wifiPass = pass;
+
+  prefs.begin("smartlight", false);
+  prefs.putString("wifi_ssid", wifiSsid);
+  prefs.putString("wifi_pass", wifiPass);
+  prefs.end();
+  Serial.printf("[Wi-Fi] Saved credentials for SSID '%s'\n", wifiSsid.c_str());
+
+  wifiConnected = false;
+  WiFi.disconnect();
+  delay(100);
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT);
+  apModeActive = true;
+  WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());
+  wifiConnectStart = millis();
+}
+
+void clearWifiCredentials() {
+  wifiSsid = "";
+  wifiPass = "";
+  prefs.begin("smartlight", false);
+  prefs.remove("wifi_ssid");
+  prefs.remove("wifi_pass");
+  prefs.end();
+  Serial.println("[Wi-Fi] Cleared credentials from NVS");
+
+  wifiConnected = false;
+  WiFi.disconnect();
+  delay(100);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT);
+  apModeActive = true;
+  Serial.printf("[Wi-Fi AP] Started Setup AP '%s' (IP: http://%s)\n",
+    AP_SSID_DEFAULT, WiFi.softAPIP().toString().c_str());
+}
+
 void setupWiFiAsync() {
-  if (USE_AP_MODE) {
+  if (wifiSsid.length() == 0) {
     WiFi.mode(WIFI_AP);
-    WiFi.softAP(AP_SSID, AP_PASS);
-    Serial.printf("[Wi-Fi AP] Broadcasted '%s' (IP: http://%s)\n", AP_SSID, WiFi.softAPIP().toString().c_str());
+    WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT);
+    apModeActive = true;
+    Serial.printf("[Wi-Fi AP] No credentials saved. Started AP '%s' (IP: http://%s)\n",
+      AP_SSID_DEFAULT, WiFi.softAPIP().toString().c_str());
   } else {
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA);
+    WiFi.softAP(AP_SSID_DEFAULT, AP_PASS_DEFAULT);
+    apModeActive = true;
     WiFi.setAutoReconnect(true);
-    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());
     wifiConnectStart = millis();
-    Serial.printf("[Wi-Fi STA] Connecting to '%s' in background...\n", WIFI_SSID);
+    Serial.printf("[Wi-Fi STA] Connecting to '%s' (Fallback AP: '%s')...\n",
+      wifiSsid.c_str(), AP_SSID_DEFAULT);
   }
 }
 
@@ -708,6 +877,60 @@ void setupServer() {
     sendJsonStatusHttp();
   });
 
+  // Wi-Fi Web Configuration Routes
+  server.on("/api/wifi/scan", HTTP_OPTIONS, []() { handleCORSHeaders(); server.send(204); });
+  server.on("/api/wifi/scan", HTTP_GET, []() {
+    handleCORSHeaders();
+    server.sendHeader("Cache-Control", "no-cache");
+    server.send(200, "application/json", getWifiScanJson());
+  });
+
+  auto handleSaveWifiHttp = []() {
+    handleCORSHeaders();
+    String body = server.arg("plain");
+    String targetSsid = "";
+    String targetPass = "";
+
+    int sIdx = body.indexOf("\"ssid\":\"");
+    if (sIdx >= 0) {
+      int sEnd = body.indexOf('"', sIdx + 8);
+      if (sEnd > sIdx) targetSsid = body.substring(sIdx + 8, sEnd);
+    }
+    int pIdx = body.indexOf("\"pass\":\"");
+    if (pIdx >= 0) {
+      int pEnd = body.indexOf('"', pIdx + 8);
+      if (pEnd > pIdx) targetPass = body.substring(pIdx + 8, pEnd);
+    }
+
+    if (targetSsid.length() > 0) {
+      connectToNewWifi(targetSsid, targetPass);
+      server.send(200, "application/json", "{\"status\":\"connecting\",\"ssid\":\"" + targetSsid + "\"}");
+    } else {
+      server.send(400, "application/json", "{\"error\":\"SSID cannot be empty\"}");
+    }
+  };
+  server.on("/api/wifi/save", HTTP_OPTIONS, []() { handleCORSHeaders(); server.send(204); });
+  server.on("/api/wifi/save", HTTP_POST, handleSaveWifiHttp);
+
+  auto handleResetWifiHttp = []() {
+    handleCORSHeaders();
+    clearWifiCredentials();
+    server.send(200, "application/json", "{\"status\":\"reset\"}");
+  };
+  server.on("/api/wifi/reset", HTTP_OPTIONS, []() { handleCORSHeaders(); server.send(204); });
+  server.on("/api/wifi/reset", HTTP_POST, handleResetWifiHttp);
+
+  server.on("/api/wifi/status", HTTP_OPTIONS, []() { handleCORSHeaders(); server.send(204); });
+  server.on("/api/wifi/status", HTTP_GET, []() {
+    handleCORSHeaders();
+    String currentSsid = wifiConnected ? WiFi.SSID() : (wifiSsid.length() > 0 ? wifiSsid : "");
+    String currentIp   = wifiConnected ? WiFi.localIP().toString() : (apModeActive ? WiFi.softAPIP().toString() : "");
+    String json = "{\"connected\":" + String(wifiConnected ? "true" : "false") +
+                  ",\"ssid\":\"" + currentSsid + "\"" +
+                  ",\"ip\":\"" + currentIp + "\"}";
+    server.send(200, "application/json", json);
+  });
+
   server.begin();
   Serial.println("[Web Server] HTTP Routes online with universal CORS support");
 }
@@ -724,11 +947,14 @@ void loadPreferences() {
   scheduleOnMin   = prefs.getInt("onMin",     0);
   scheduleOffHour = prefs.getInt("offHour",   6);
   scheduleOffMin  = prefs.getInt("offMin",    0);
+  wifiSsid        = prefs.getString("wifi_ssid", "");
+  wifiPass        = prefs.getString("wifi_pass", "");
   prefs.end();
 
-  Serial.printf("[NVS] Loaded: Light=%s | Mode=%d | LDR Thresh=%d | ON %02d:%02d | OFF %02d:%02d\n",
+  Serial.printf("[NVS] Loaded: Light=%s | Mode=%d | LDR Thresh=%d | ON %02d:%02d | OFF %02d:%02d | Wi-Fi SSID='%s'\n",
     lightState ? "ON" : "OFF", controlMode, ldrThreshold,
-    scheduleOnHour, scheduleOnMin, scheduleOffHour, scheduleOffMin);
+    scheduleOnHour, scheduleOnMin, scheduleOffHour, scheduleOffMin,
+    wifiSsid.c_str());
 }
 
 void savePreferences() {

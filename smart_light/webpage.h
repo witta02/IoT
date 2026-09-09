@@ -368,8 +368,32 @@ input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2)}
     </div>
 
     <div id="wifiContent" style="display:none">
-      <p style="font-size:.75rem;color:var(--t2);line-height:1.5">เชื่อมต่อผ่านเครือข่ายไวไฟบ้าน (วง LAN)</p>
-      <button class="btn-main" onclick="fetchStatus();closeModal()">ซิงค์ข้อมูลไวไฟ</button>
+      <div style="font-size:.75rem;color:var(--t2);line-height:1.5;margin-bottom:10px">
+        เลือกเครือข่าย Wi-Fi ให้โคมไฟเชื่อมต่ออินเทอร์เน็ต
+      </div>
+
+      <div style="padding:8px 10px;background:var(--subtle);border:1px solid var(--brd);border-radius:8px;font-size:.7rem;color:var(--t2);margin-bottom:12px;text-align:left">
+        <div>สถานะ: <span id="wifiStatusTxt" style="color:var(--t1);font-weight:600">กำลังตรวจสอบ...</span></div>
+        <div style="margin-top:2px">IP: <span id="wifiIpTxt" style="color:var(--acc);font-family:monospace">-</span></div>
+      </div>
+
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <select id="wifiSelect" style="flex:1;background:var(--subtle);border:1px solid var(--brd);color:var(--t1);padding:8px 10px;border-radius:8px;font-size:.75rem;outline:none">
+          <option value="">-- กดปุ่มค้นหา Wi-Fi --</option>
+        </select>
+        <button id="btnScanWifi" class="btn-rf" onclick="scanWifiWeb()" style="padding:8px 12px;font-size:.75rem;white-space:nowrap">🔍 สแกน</button>
+      </div>
+
+      <div style="margin-bottom:12px">
+        <input type="password" id="wifiPass" placeholder="รหัสผ่าน Wi-Fi (ถ้ามี)" style="width:100%;box-sizing:border-box;background:var(--subtle);border:1px solid var(--brd);color:var(--t1);padding:8px 10px;border-radius:8px;font-size:.75rem;outline:none">
+      </div>
+
+      <button class="btn-main" id="btnSaveWifi" onclick="saveWifiWeb()">บันทึกและเชื่อมต่อ Wi-Fi</button>
+
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <button onclick="fetchStatus()" style="background:none;border:none;color:var(--t2);font-size:.7rem;cursor:pointer;text-decoration:underline">ซิงค์สถานะ</button>
+        <button onclick="resetWifiWeb()" style="background:none;border:none;color:#ef4444;font-size:.7rem;cursor:pointer">ล้างค่า Wi-Fi</button>
+      </div>
     </div>
   </div>
 </div>
@@ -525,8 +549,15 @@ async function fetchStatus() {
     const res = await fetch('/api/status');
     const json = await res.json();
     Object.assign(state, json);
-    setConnectedBadge('wifi', 'ไวไฟ: ออนไลน์');
+    setConnectedBadge('wifi', state.wifi ? 'ไวไฟ: ออนไลน์' : 'โหมด Setup AP');
     renderUI();
+
+    const stEl = document.getElementById('wifiStatusTxt');
+    const ipEl = document.getElementById('wifiIpTxt');
+    if (stEl && ipEl) {
+      stEl.innerText = state.wifi ? ('เชื่อมต่อกับ ' + (state.ssid || '')) : 'ยังไม่ได้เชื่อมต่อ (Setup AP)';
+      ipEl.innerText = state.ip || '-';
+    }
   } catch (e) {}
 }
 
@@ -652,6 +683,75 @@ function setConnectedBadge(mode, text) {
     cnDot.style.display = 'inline-block';
     cnLabel.innerText = text;
   }
+}
+
+// ─── WI-FI PROVISIONING HELPERS ──────────────────────────────────────────
+async function scanWifiWeb() {
+  const btn = document.getElementById('btnScanWifi');
+  const sel = document.getElementById('wifiSelect');
+  btn.innerText = 'สแกน...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/wifi/scan');
+    const data = await res.json();
+    sel.innerHTML = '';
+    const nets = data.networks || [];
+    if (nets.length > 0) {
+      nets.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.ssid;
+        opt.innerText = n.ssid + ' (' + n.rssi + ' dBm' + (n.sec ? ' 🔒' : '') + ')';
+        sel.appendChild(opt);
+      });
+    } else {
+      sel.innerHTML = '<option value="">ไม่พบเครือข่าย Wi-Fi</option>';
+    }
+  } catch (err) {
+    alert('สแกนไม่สำเร็จ: ' + err.message);
+  } finally {
+    btn.innerText = '🔍 สแกน';
+    btn.disabled = false;
+  }
+}
+
+async function saveWifiWeb() {
+  const sel = document.getElementById('wifiSelect');
+  const passIn = document.getElementById('wifiPass');
+  const btn = document.getElementById('btnSaveWifi');
+  const ssid = sel.value.trim();
+  const pass = passIn.value;
+
+  if (!ssid) {
+    alert('โปรดเลือกเครือข่าย Wi-Fi จากรายการ');
+    return;
+  }
+
+  btn.innerText = 'กำลังส่งข้อมูล...';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/api/wifi/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ssid, pass })
+    });
+    const json = await res.json();
+    alert('บันทึกสำเร็จ บอร์ดกำลังเชื่อมต่อไปยัง ' + ssid);
+    setTimeout(fetchStatus, 3000);
+  } catch (err) {
+    alert('เชื่อมต่อไม่สำเร็จ: ' + err.message);
+  } finally {
+    btn.innerText = 'บันทึกและเชื่อมต่อ Wi-Fi';
+    btn.disabled = false;
+  }
+}
+
+async function resetWifiWeb() {
+  if (!confirm('ยืนยันล้างค่า Wi-Fi และกลับสู่ Setup AP?')) return;
+  try {
+    await fetch('/api/wifi/reset', { method: 'POST' });
+    alert('ล้างค่า Wi-Fi สำเร็จ บอร์ดเปิด SoftAP allight-Setup');
+    setTimeout(fetchStatus, 2000);
+  } catch (err) {}
 }
 
 // ─── MODAL HELPERS ────────────────────────────────────────────────────────

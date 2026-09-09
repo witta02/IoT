@@ -4,6 +4,7 @@ import type { DeviceConnection } from '../types';
 interface NavbarProps {
   connection: DeviceConnection;
   onOpenConnectModal: () => void;
+  onOpenWifiModal: () => void;
   onRefresh: () => void;
   isSyncing: boolean;
 }
@@ -11,6 +12,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   connection,
   onOpenConnectModal,
+  onOpenWifiModal,
   onRefresh,
   isSyncing
 }) => {
@@ -57,7 +59,21 @@ export const Navbar: React.FC<NavbarProps> = ({
         <p className="text-xs text-[#8b95a5]">ระบบควบคุมโคมไฟอัจฉริยะ</p>
       </div>
 
-      <div className="flex items-center justify-center gap-2.5">
+      <div className="flex items-center justify-center gap-2">
+        <button
+          onClick={onOpenWifiModal}
+          className="text-xs px-3 py-2 rounded-xl bg-[#141820] hover:bg-[#1a202c] text-[#8b95a5] hover:text-[#d4af37] border border-[#222834] transition-all cursor-pointer select-none font-medium flex items-center gap-1.5"
+          title="เลือก Wi-Fi ให้บอร์ด"
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0" strokeLinecap="round" />
+            <path d="M1.42 9a16 16 0 0 1 21.16 0" strokeLinecap="round" />
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0" strokeLinecap="round" />
+            <line x1="12" y1="20" x2="12.01" y2="20" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+          <span className="hidden sm:inline">ตั้งค่า Wi-Fi</span>
+        </button>
+
         <button
           onClick={onRefresh}
           disabled={isSyncing || !isConnected}

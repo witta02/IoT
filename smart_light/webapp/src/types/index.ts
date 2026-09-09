@@ -10,6 +10,14 @@ export interface SmartLightState {
   time: string;
   ble?: boolean;
   wifi?: boolean;
+  ssid?: string;
+  ip?: string;
+}
+
+export interface WifiNetwork {
+  ssid: string;
+  rssi: number;
+  sec: number; // 0=Open, 1=Secured
 }
 
 export type ConnectionMode = 'ble' | 'wifi' | 'mqtt' | 'none';

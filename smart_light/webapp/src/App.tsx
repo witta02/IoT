@@ -5,6 +5,7 @@ import { ModeSelector } from './components/ModeSelector';
 import { LdrSensorCard } from './components/LdrSensorCard';
 import { ScheduleCard } from './components/ScheduleCard';
 import { ConnectionModal } from './components/ConnectionModal';
+import { WifiConfigModal } from './components/WifiConfigModal';
 import type { SmartLightState, DeviceConnection } from './types';
 import { bleService } from './services/bleService';
 import { apiService } from './services/apiService';
@@ -31,6 +32,7 @@ export const App: React.FC = () => {
   });
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWifiModalOpen, setIsWifiModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isBleSupported, setIsBleSupported] = useState(true);
 
@@ -303,6 +305,7 @@ export const App: React.FC = () => {
         <Navbar
           connection={connection}
           onOpenConnectModal={() => setIsModalOpen(true)}
+          onOpenWifiModal={() => setIsWifiModalOpen(true)}
           onRefresh={handleRefresh}
           isSyncing={isSyncing}
         />
@@ -372,6 +375,16 @@ export const App: React.FC = () => {
         onConnectMqtt={handleConnectMqtt}
         onDisconnect={handleDisconnect}
         isBleSupported={isBleSupported}
+        onOpenWifiModal={() => setIsWifiModalOpen(true)}
+      />
+
+      <WifiConfigModal
+        isOpen={isWifiModalOpen}
+        onClose={() => setIsWifiModalOpen(false)}
+        connection={connection}
+        currentState={state}
+        onConnectBle={handleConnectBle}
+        onStateUpdate={handleStateUpdate}
       />
     </div>
   );

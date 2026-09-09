@@ -10,6 +10,7 @@ interface ConnectionModalProps {
   onConnectMqtt: (username?: string, password?: string) => Promise<void>;
   onDisconnect: () => void;
   isBleSupported: boolean;
+  onOpenWifiModal?: () => void;
 }
 
 export const ConnectionModal: React.FC<ConnectionModalProps> = ({
@@ -20,7 +21,8 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
   onConnectWifi,
   onConnectMqtt,
   onDisconnect,
-  isBleSupported
+  isBleSupported,
+  onOpenWifiModal
 }) => {
   const [activeTab, setActiveTab] = useState<'auto' | 'mqtt' | 'ble' | 'wifi' | 'qr'>('auto');
   const [wifiIp, setWifiIp] = useState('http://smartlight.local');
@@ -163,6 +165,30 @@ export const ConnectionModal: React.FC<ConnectionModalProps> = ({
               className="text-xs px-2.5 py-1 rounded bg-[#1c222d] hover:bg-[#252c3a] text-zinc-300 border border-[#222834] hover:border-[#d4af37]/40 cursor-pointer"
             >
               ตัดการเชื่อมต่อ
+            </button>
+          </div>
+        )}
+
+        {onOpenWifiModal && (
+          <div className="my-2.5 p-2.5 bg-[#141820] border border-[#d4af37]/30 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs">
+              <svg viewBox="0 0 24 24" className="w-4 h-4 text-[#d4af37]" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0" strokeLinecap="round" />
+                <path d="M1.42 9a16 16 0 0 1 21.16 0" strokeLinecap="round" />
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0" strokeLinecap="round" />
+                <line x1="12" y1="20" x2="12.01" y2="20" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
+              <span className="text-[#fcfbfa] font-medium">ต้องการเลือก Wi-Fi ให้บอร์ด?</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenWifiModal();
+              }}
+              className="text-xs px-2.5 py-1 rounded-lg bg-[#1c222d] text-[#d4af37] border border-[#d4af37]/40 hover:bg-[#252c3a] font-semibold cursor-pointer"
+            >
+              ตั้งค่า Wi-Fi
             </button>
           </div>
         )}
